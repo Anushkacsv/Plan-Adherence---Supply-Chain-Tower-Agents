@@ -1,0 +1,13 @@
+{
+  "kpis": {
+    "sla": 94.2,
+    "pos_neg": 98.1,
+    "prod": 87.5,
+    "util": 76.8,
+    "carrier": 9.2,
+    "delay": 14.2,
+    "contract": 91.4,
+    "cost_var": 2.1
+  },
+  "trend": []
+}
