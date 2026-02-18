@@ -71,8 +71,8 @@ function App() {
         <div className="layout">
             <aside className="sidebar">
                 <div className="logo">
-                    <div className="logo-icon">P</div>
-                    <span>Plan Adherence</span>
+                    <div className="logo-icon">S</div>
+                    <span>Supply Chain Solutions</span>
                 </div>
                 <nav>
                     <div className="nav-item active"><Activity size={18} /> Dashboard</div>
