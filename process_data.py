@@ -68,7 +68,7 @@ if __name__ == "__main__":
             'shipments': shipments,
             'trend': []
         }
-        with open('dashboard_data.json', 'w') as f: json.dump(data, f, indent=2)
+        with open('public/dashboard_data.json', 'w') as f: json.dump(data, f, indent=2)
         print("Data processed with shipment samples.")
     except Exception as e:
         print(f"Error: {e}")
