@@ -1,13 +1,12 @@
 {
   "kpis": {
-    "sla": 94.2,
-    "pos_neg": 98.1,
-    "prod": 87.5,
-    "util": 76.8,
-    "carrier": 9.2,
-    "delay": 14.2,
-    "contract": 91.4,
-    "cost_var": 2.1
+    "sla": 28.5,
+    "delay": 80.6,
+    "total_shipments": 24000,
+    "unprod_actual": 54.2,
+    "prod_actual": 45.8,
+    "cost_var": 7.7,
+    "util": 76.8
   },
   "trend": []
 }

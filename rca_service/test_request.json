@@ -1,0 +1,22 @@
+{
+    "data": [
+        {
+            "delay_minutes": 85.0,
+            "detention_cost": 120.0,
+            "congestion_score_x": 0.8,
+            "weather_risk_score": 0.4,
+            "distance_km": 450.0,
+            "avg_delay_minutes": 45.0,
+            "ontime_percentage": 0.75,
+            "rejection_rate": 0.05,
+            "delay_per_km": 0.18,
+            "cost_per_delay": 1.4,
+            "carrier_risk_score": 0.6,
+            "total_risk_score": 1.2,
+            "congestion_weather_interaction": 0.32,
+            "carrier_delay_ratio": 1.1,
+            "detention_intensity": 0.26,
+            "risk_pressure": 0.85
+        }
+    ]
+}
