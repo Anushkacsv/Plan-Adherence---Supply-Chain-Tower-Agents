@@ -6,10 +6,25 @@ def get_kpis():
     xls = pd.ExcelFile('Updated_Logistics_Dataset_Realistic_Expanded.xlsx')
     
     kpis = {}
+    shipments_sample = []
     
     # --- 1. SHIPMENT DATA ---
     if 'Shipment' in xls.sheet_names:
         df_ship = pd.read_excel(xls, 'Shipment')
+        
+        # Take a sample of shipments for the UI to suggest
+        # We take ones with high delay to make RCA more interesting
+        sample_df = df_ship.sort_values(by='delay_minutes', ascending=False).head(10)
+        shipments_sample = sample_df.to_dict(orient='records')
+        
+        # Convert dates to strings for JSON
+        for s in shipments_sample:
+            for k, v in s.items():
+                if isinstance(v, pd.Timestamp):
+                    s[k] = v.strftime('%Y-%m-%d %H:%M:%S')
+                elif isinstance(v, float) and np.isnan(v):
+                    s[k] = None
+
         if 'actual_arrival_time' in df_ship.columns and 'planned_arrival_time' in df_ship.columns:
             df_ship['actual_arrival_time'] = pd.to_datetime(df_ship['actual_arrival_time'])
             df_ship['planned_arrival_time'] = pd.to_datetime(df_ship['planned_arrival_time'])
@@ -27,13 +42,11 @@ def get_kpis():
             occ_rate = df_slot['is_occupied'].astype(int).mean() * 100
             kpis['util'] = round(occ_rate, 1)
 
-    # --- 3. WAREHOUSE PRODUCTIVITY (Derived from Congestion) ---
+    # --- 3. WAREHOUSE PRODUCTIVITY ---
     if 'Warehouse' in xls.sheet_names:
         df_wh = pd.read_excel(xls, 'Warehouse')
         if 'warehouse_congestion_score' in df_wh.columns:
-            # High congestion = high unproductive movement
             avg_congestion = df_wh['warehouse_congestion_score'].mean()
-            # If congestion 0.54, Productivity = 46%, Unproductive = 54%
             kpis['unprod_actual'] = round(avg_congestion * 100, 1)
             kpis['prod_actual'] = round(100 - kpis['unprod_actual'], 1)
 
@@ -45,18 +58,17 @@ def get_kpis():
             variance = ((df_order['price'].mean() - q1_price) / q1_price) * 10
             kpis['cost_var'] = round(max(1.2, min(8.5, variance)), 1)
 
-    return kpis
+    return kpis, shipments_sample
 
 if __name__ == "__main__":
     try:
-        kpis = get_kpis()
-        # Default fillers
-        defaults = {'sla': 28.5, 'delay': 80.6, 'total_shipments': 24000, 'util': 76.8, 'prod_actual': 46.0, 'unprod_actual': 54.0, 'cost_var': 7.7}
-        for k, v in defaults.items():
-            if k not in kpis: kpis[k] = v
-            
-        data = {'kpis': kpis, 'trend': []}
+        kpis, shipments = get_kpis()
+        data = {
+            'kpis': kpis, 
+            'shipments': shipments,
+            'trend': []
+        }
         with open('dashboard_data.json', 'w') as f: json.dump(data, f, indent=2)
-        print("Data processed.")
+        print("Data processed with shipment samples.")
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")

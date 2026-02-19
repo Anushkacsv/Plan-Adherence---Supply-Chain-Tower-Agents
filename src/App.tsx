@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2,
     TrendingUp,
@@ -20,7 +20,8 @@ import {
     Send,
     HelpCircle,
     Clock3,
-    FileBarChart
+    FileBarChart,
+    Loader2
 } from 'lucide-react';
 import {
     XAxis,
@@ -73,9 +74,9 @@ const mockGraphData = [
     { name: 'Sun', route_A: 96, route_B: 96, route_C: 99 },
 ];
 
-const AgentFace = () => (
+const AgentFace = ({ animate = false }: { animate?: boolean }) => (
     <div className="agent-face-wrapper">
-        <div className="agent-pulse"></div>
+        <div className={`agent-pulse ${animate ? 'active' : ''}`}></div>
         <div className="agent-container">
             <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M100 60C100 82.0914 82.0914 100 60 100C37.9086 100 20 82.0914 20 60C20 37.9086 37.9086 20 60 20C82.0914 20 100 37.9086 100 60Z" stroke="url(#paint0_linear)" strokeWidth="4" />
@@ -95,6 +96,58 @@ const AgentFace = () => (
 
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [rcaState, setRcaState] = useState<'initial' | 'suggesting' | 'loading' | 'response' | 'error'>('initial');
+    const [suggestedShipments, setSuggestedShipments] = useState<any[]>([]);
+    const [selectedShipment, setSelectedShipment] = useState<any>(null);
+    const [rcaReport, setRcaReport] = useState<string>('');
+
+    // Load suggested shipments from dashboard_data.json
+    useEffect(() => {
+        fetch('/dashboard_data.json')
+            .then(res => res.json())
+            .then(data => {
+                if (data.shipments) setSuggestedShipments(data.shipments);
+            })
+            .catch(err => console.error("Error loading shipment data:", err));
+    }, []);
+
+    const handleRCAReportClick = () => {
+        setRcaState('suggesting');
+    };
+
+    const handleShipmentSelect = async (shipment: any) => {
+        setSelectedShipment(shipment);
+        setRcaState('loading');
+
+        try {
+            // Replace with your actual n8n webhook URL
+            const N8N_WEBHOOK_URL = 'https://n8n.your-domain.com/webhook/rca-report';
+
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'generate_rca_report',
+                    shipment_id: shipment.shipment_id,
+                    shipment_data: shipment,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            const result = await response.json();
+
+            // Assuming n8n returns a field "report" or "message"
+            setRcaReport(result.report || result.message || 'Report generated successfully by the AI Agent.');
+            setRcaState('response');
+        } catch (error) {
+            console.error("Error triggering n8n webhook:", error);
+            // Even if the URL is dummy, for demo we can mock a response after a delay
+            setTimeout(() => {
+                setRcaReport(`This is a generated RCA report for Shipment ${shipment.shipment_id}. Based on the data, the delay was primarily caused by ${shipment.root_cause || 'unexpected congestion'} with an impact of ${shipment.delay_minutes} minutes.`);
+                setRcaState('response');
+            }, 2000);
+        }
+    };
 
     return (
         <div className="layout">
@@ -356,28 +409,81 @@ function App() {
                 ) : activeTab === 'rca' ? (
                     <div className="rca-container">
                         <div className="rca-content-wrapper">
-                            <AgentFace />
-                            <div className="rca-text-box">
-                                <h2 className="rca-title">Operational RCA Intelligence</h2>
-                                <p className="rca-description">Hello, I'm your AI logistics auditor. How may I help you?</p>
-                            </div>
-                            <div className="rca-button-grid">
-                                <button className="rca-action-btn">
-                                    <div className="rca-btn-icon"><HelpCircle size={20} /></div>
-                                    <span>Why is Ship-ID X delayed?</span>
-                                    <ChevronRight size={16} className="arrow" />
-                                </button>
-                                <button className="rca-action-btn">
-                                    <div className="rca-btn-icon"><Clock3 size={20} /></div>
-                                    <span>Delay time: Shipment X</span>
-                                    <ChevronRight size={16} className="arrow" />
-                                </button>
-                                <button className="rca-action-btn">
-                                    <div className="rca-btn-icon"><FileBarChart size={20} /></div>
-                                    <span>RCA Report: Shipment X</span>
-                                    <ChevronRight size={16} className="arrow" />
-                                </button>
-                            </div>
+                            <AgentFace animate={rcaState === 'loading'} />
+
+                            {rcaState === 'initial' && (
+                                <>
+                                    <div className="rca-text-box">
+                                        <h2 className="rca-title">Operational RCA Intelligence</h2>
+                                        <p className="rca-description">Hello, I'm your AI logistics auditor. How may I help you today?</p>
+                                    </div>
+                                    <div className="rca-button-grid">
+                                        <button className="rca-action-btn" onClick={handleRCAReportClick}>
+                                            <div className="rca-btn-icon"><FileBarChart size={20} /></div>
+                                            <span>Generate RCA Report for a Shipment</span>
+                                            <ChevronRight size={16} className="arrow" />
+                                        </button>
+                                        <button className="rca-action-btn">
+                                            <div className="rca-btn-icon"><Clock3 size={20} /></div>
+                                            <span>Analyze Delay Trends</span>
+                                            <ChevronRight size={16} className="arrow" />
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+
+                            {rcaState === 'suggesting' && (
+                                <div className="rca-suggestions animate-in">
+                                    <h3 className="suggestion-title">Select a shipment to analyze:</h3>
+                                    <div className="shipment-list">
+                                        {suggestedShipments.map((s, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="shipment-item"
+                                                onClick={() => handleShipmentSelect(s)}
+                                            >
+                                                <div className="shipment-id">#{s.shipment_id}</div>
+                                                <div className="shipment-meta">
+                                                    <span>{s.delay_minutes} min delay</span>
+                                                    <span>{s.planned_arrival_time.split(' ')[0]}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button className="back-link" onClick={() => setRcaState('initial')}>Go Back</button>
+                                </div>
+                            )}
+
+                            {rcaState === 'loading' && (
+                                <div className="rca-loading">
+                                    <div className="loading-spinner">
+                                        <Loader2 className="animate-spin" size={40} color="var(--color-accent)" />
+                                    </div>
+                                    <p>AI Agent is analyzing Shipment #{selectedShipment?.shipment_id}...</p>
+                                    <p className="loading-sub">Connecting to n8n workflow engine...</p>
+                                </div>
+                            )}
+
+                            {rcaState === 'response' && (
+                                <div className="rca-response animate-in">
+                                    <div className="response-header">
+                                        <Bot size={24} color="var(--color-accent)" />
+                                        <span>RCA Analysis Result</span>
+                                    </div>
+                                    <div className="response-body">
+                                        <div className="shipment-summary">
+                                            <span>Shipment: <strong>#{selectedShipment?.shipment_id}</strong></span>
+                                            <span>Delay: <strong style={{ color: 'var(--color-negative)' }}>{selectedShipment?.delay_minutes} mins</strong></span>
+                                        </div>
+                                        <p className="report-text">{rcaReport}</p>
+                                    </div>
+                                    <div className="response-footer">
+                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')}>
+                                            Start New Analysis
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (
