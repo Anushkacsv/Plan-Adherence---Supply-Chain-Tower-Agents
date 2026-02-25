@@ -48,12 +48,29 @@ body {
 }
 
 .sidebar {
-  width: 240px;
+  width: 260px;
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border-card);
   display: flex;
   flex-direction: column;
-  padding: 2rem 1.25rem;
+  padding: 1.5rem 1rem;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+  padding: 1.5rem 0.75rem;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding: 0 0.5rem;
 }
 
 .logo {
@@ -62,9 +79,38 @@ body {
   gap: 0.75rem;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   color: var(--color-accent);
-  margin-bottom: 3rem;
+}
+
+.collapse-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.collapse-toggle:hover {
+  background: var(--color-accent);
+  color: #000;
+  border-color: var(--color-accent);
+}
+
+.collapsed .sidebar-header {
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0;
+}
+
+.collapsed .logo {
+  justify-content: center;
 }
 
 .logo-icon {
@@ -97,7 +143,28 @@ body {
   border-radius: 0.75rem;
   cursor: pointer;
   transition: var(--transition);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapsed .nav-item {
+  justify-content: center;
+  padding: 0.875rem;
+  gap: 0;
+}
+
+.nav-item svg {
+  flex-shrink: 0;
+}
+
+.nav-item span {
+  transition: opacity 0.2s;
+}
+
+.collapsed .nav-item span {
+  opacity: 0;
+  width: 0;
 }
 
 .nav-item:hover {
@@ -121,6 +188,11 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow: hidden;
+}
+
+.collapsed .user-profile {
+  justify-content: center;
 }
 
 .avatar {
@@ -148,11 +220,17 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   height: 100vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  transition: padding 0.3s;
+  background: #f8fafc;
+}
+
+.sidebar-collapsed .main-content {
+  padding: 1.5rem 3rem;
 }
 
 header {

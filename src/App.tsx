@@ -21,7 +21,13 @@ import {
     HelpCircle,
     Clock3,
     FileBarChart,
-    Loader2
+    Loader2,
+    Menu,
+    ChevronLeft,
+    Truck,
+    RotateCcw,
+    PackageSearch,
+    AlertTriangle
 } from 'lucide-react';
 import {
     XAxis,
@@ -100,6 +106,16 @@ function App() {
     const [suggestedShipments, setSuggestedShipments] = useState<any[]>([]);
     const [selectedShipment, setSelectedShipment] = useState<any>(null);
     const [rcaReport, setRcaReport] = useState<string>('');
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const navItems = [
+        { id: 'dashboard', label: 'Dashboard', icon: <Activity size={18} /> },
+        { id: 'rca', label: 'RCA Analysis', icon: <Search size={18} /> },
+        { id: 'transport', label: 'Transport Optimizer', icon: <Truck size={18} /> },
+        { id: 'reverse', label: 'Reverse Logistics', icon: <RotateCcw size={18} /> },
+        { id: 'consolidation', label: 'Load Consolidation', icon: <Layers size={18} /> },
+        { id: 'disruption', label: 'Disruption Response', icon: <AlertTriangle size={18} /> }
+    ];
 
     // Load suggested shipments from dashboard_data.json
     useEffect(() => {
@@ -150,43 +166,47 @@ function App() {
     };
 
     return (
-        <div className="layout">
-            <aside className="sidebar">
-                <div className="logo">
-                    <img src="/logo.png" alt="Supply Chain Solutions" className="sidebar-logo-img" />
-                    <span>Supply Chain Solutions</span>
+        <div className={`layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+            <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+                <div className="sidebar-header">
+                    <div className="logo">
+                        <img src="/logo.png" alt="LoCo" className="sidebar-logo-img" />
+                        {!isSidebarCollapsed && <span>LoCo</span>}
+                    </div>
+                    <button
+                        className="collapse-toggle"
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    >
+                        {isSidebarCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
+                    </button>
                 </div>
                 <nav>
-                    <div
-                        className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('dashboard')}
-                    >
-                        <Activity size={18} /> Dashboard
-                    </div>
-                    <div
-                        className={`nav-item ${activeTab === 'rca' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('rca')}
-                    >
-                        <Search size={18} /> RCA Analysis
-                    </div>
-                    <div
-                        className={`nav-item ${activeTab === 'optimizer' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('optimizer')}
-                    >
-                        <Layers size={18} /> Slot Booking Optimizer
-                    </div>
+                    {navItems.map(item => (
+                        <div
+                            key={item.id}
+                            className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(item.id)}
+                            title={isSidebarCollapsed ? item.label : ''}
+                        >
+                            {item.icon} {!isSidebarCollapsed && <span>{item.label}</span>}
+                        </div>
+                    ))}
                 </nav>
 
                 <div className="sidebar-footer">
                     <div className="user-profile">
                         <div className="avatar">AD</div>
-                        <div className="user-info">
-                            <div className="user-name">Admin User</div>
-                            <div className="user-role">Operations Lead</div>
-                        </div>
-                        <button className="icon-btn" style={{ marginLeft: 'auto' }}>
-                            <ChevronRight size={16} />
-                        </button>
+                        {!isSidebarCollapsed && (
+                            <>
+                                <div className="user-info">
+                                    <div className="user-name">Admin User</div>
+                                    <div className="user-role">Operations Lead</div>
+                                </div>
+                                <button className="icon-btn" style={{ marginLeft: 'auto' }}>
+                                    <ChevronRight size={16} />
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </aside>
@@ -194,8 +214,16 @@ function App() {
             <main className="main-content">
                 <header>
                     <div className="header-title">
-                        <h1>{activeTab === 'dashboard' ? 'Supply Chain Tower - ABI' : 'RCA Analysis Agent'}</h1>
-                        <p>{activeTab === 'dashboard' ? 'Real-time performance tracking and resource optimization' : 'Deep dive into shipment delays and operational bottlenecks'}</p>
+                        <h1>
+                            {activeTab === 'dashboard' ? 'Supply Chain Tower - ABI' :
+                                activeTab === 'rca' ? 'RCA Analysis Agent' :
+                                    navItems.find(i => i.id === activeTab)?.label}
+                        </h1>
+                        <p>
+                            {activeTab === 'dashboard' ? 'Real-time performance tracking and resource optimization' :
+                                activeTab === 'rca' ? 'Deep dive into shipment delays and operational bottlenecks' :
+                                    `Optimizing ${navItems.find(i => i.id === activeTab)?.label} workflows`}
+                        </p>
                     </div>
 
                 </header>
