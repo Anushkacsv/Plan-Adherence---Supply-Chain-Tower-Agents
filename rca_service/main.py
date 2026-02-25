@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
 import pandas as pd
 import joblib
@@ -8,6 +9,15 @@ from typing import List, Dict
 
 # Initialize FastAPI app
 app = FastAPI(title="Supply Chain RCA Prediction Service")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define file paths for models
 MODEL_PATH = "models/rca_model.pkl"
