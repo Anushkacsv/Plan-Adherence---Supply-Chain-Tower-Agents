@@ -170,8 +170,8 @@ function App() {
             <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-header">
                     <div className="logo">
-                        <img src="/logo.png" alt="LoCo" className="sidebar-logo-img" />
-                        {!isSidebarCollapsed && <span>LoCo</span>}
+                        <img src="/logo.png" alt="Supply Chain Solutions" className="sidebar-logo-img" />
+                        {!isSidebarCollapsed && <span>Supply Chain Solutions</span>}
                     </div>
                     <button
                         className="collapse-toggle"
