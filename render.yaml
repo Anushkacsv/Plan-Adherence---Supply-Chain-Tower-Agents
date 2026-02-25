@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: supply-chain-rca-service
+    env: python
+    buildCommand: pip install -r rca_service/requirements.txt
+    startCommand: uvicorn rca_service.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
