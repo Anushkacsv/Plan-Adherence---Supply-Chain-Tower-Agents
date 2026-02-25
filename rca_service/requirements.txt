@@ -10,3 +10,4 @@ python-multipart
 xgboost
 joblib
 pickle5; python_version < '3.8'
+gunicorn
