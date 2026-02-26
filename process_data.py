@@ -96,17 +96,32 @@ def get_kpis_and_enriched_shipments():
     else:
         kpis['util'] = 76.8 # Fallback
 
-    return kpis, shipments_sample
+    # --- EXPORT VARIOUS SHEETS FOR THE UI TABLE ---
+    def get_sample(df, n=30):
+        records = df.head(n).replace({np.nan: None}).to_dict(orient='records')
+        return [clean_dict(r) for r in records]
+
+    tables = {
+        "Orders": get_sample(df_order),
+        "Shipments": shipments_sample,
+        "Routes": get_sample(df_route),
+        "Carriers": get_sample(df_carrier),
+        "Warehouses": get_sample(df_wh),
+        "Slots": get_sample(df_slot)
+    }
+
+    return kpis, shipments_sample, tables
 
 if __name__ == "__main__":
     try:
-        kpis, shipments = get_kpis_and_enriched_shipments()
+        kpis, shipments, tables = get_kpis_and_enriched_shipments()
         data = {
             'kpis': kpis, 
             'shipments': shipments,
+            'tables': tables,
             'trend': []
         }
         with open('public/dashboard_data.json', 'w') as f: json.dump(data, f, indent=2)
-        print("✅ Data processing complete. Shipments enriched with ML features.")
+        print("✅ Data processing complete. Multiple tables exported.")
     except Exception as e:
         print(f"❌ Error during processing: {e}")
