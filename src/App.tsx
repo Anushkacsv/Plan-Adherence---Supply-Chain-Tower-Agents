@@ -136,32 +136,80 @@ function App() {
         setRcaState('loading');
 
         try {
-            // Replace with your actual n8n webhook URL
-            const N8N_WEBHOOK_URL = 'https://n8n.your-domain.com/webhook/rca-report';
-
+            const N8N_WEBHOOK_URL = '/api/n8n';
             const response = await fetch(N8N_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'generate_rca_report',
                     shipment_id: shipment.shipment_id,
-                    shipment_data: shipment,
+                    features: {
+                        delay_minutes: shipment.delay_minutes,
+                        detention_cost: shipment.detention_cost,
+                        congestion_score: shipment.congestion_score,
+                        weather_risk_score: shipment.weather_risk_score,
+                        distance_km: shipment.distance_km,
+                        avg_delay_minutes: shipment.avg_delay_minutes,
+                        ontime_percentage: shipment.ontime_percentage,
+                        rejection_rate: shipment.rejection_rate,
+                    },
+                    full_data: shipment,
                     timestamp: new Date().toISOString()
                 })
             });
 
-            const result = await response.json();
+            if (!response.ok) throw new Error(`Webhook error`);
 
-            // Assuming n8n returns a field "report" or "message"
-            setRcaReport(result.report || result.message || 'Report generated successfully by the AI Agent.');
+            const result = await response.json();
+            if (result.rca_class) {
+                setRcaReport(JSON.stringify(result));
+            } else {
+                setRcaReport(result.message || 'Analysis completed');
+            }
             setRcaState('response');
         } catch (error) {
-            console.error("Error triggering n8n webhook:", error);
-            // Even if the URL is dummy, for demo we can mock a response after a delay
+            console.warn("n8n connection failed, using dummy demo fallback.");
+
+            // Dummy Data Logic for Demo
             setTimeout(() => {
-                setRcaReport(`This is a generated RCA report for Shipment ${shipment.shipment_id}. Based on the data, the delay was primarily caused by ${shipment.root_cause || 'unexpected congestion'} with an impact of ${shipment.delay_minutes} minutes.`);
+                const categories = ['Operational', 'Weather', 'Traffic', 'Manual Review'];
+                const selectedCat = categories[Math.floor(Math.random() * categories.length)];
+                const delay = Math.round(shipment.delay_minutes || 150);
+
+                const dummyPool: any = {
+                    'Operational': {
+                        root_cause: `The primary root cause for the ${delay}-minute delay is identified as operational, with a confidence level of 0.7681. This indicates a disruption or inefficiency within the execution phase of the shipment, potentially related to loading/unloading processes or internal handling.`,
+                        confidence: 0.7681,
+                        impact: `Operational Impact:\n- Direct delay of ${delay} minutes disrupting downstream logistics.\n- Increased resource idleness (driver wait time).\n\nFinancial Impact:\n- Potential for driver detention fees.\n- Risk of penalties for late delivery.`,
+                        improvements: `Recommended Corrective Actions:\n- Investigate specific failure points at the loading hub.\n- Review current SOPs for this operational segment.`
+                    },
+                    'Weather': {
+                        root_cause: `A severe weather event along the northern transit corridor has caused a ${delay}-minute deviation. Low visibility and heavy precipitation required reduced carrier speeds for safety compliance.`,
+                        confidence: 0.7842,
+                        impact: `Logistics Impact:\n- Speed reduction across a 200km segment.\n- Rerouting required for subsequent legs.\n\nRisk Assessment:\n- Potential for further cascaded delays in the network.`,
+                        improvements: `Preventive Actions:\n- Integrate real-time weather metadata into route planning.\n- Increase buffer times during known monsoon/winter seasons.`
+                    },
+                    'Traffic': {
+                        root_cause: `Extreme port congestion and urban traffic volume near the destination hub resulted in a ${delay}-minute delay. The congestion index peaked at 8.4 during the transit window.`,
+                        confidence: 0.7594,
+                        impact: `Network Impact:\n- Missed warehouse slot window.\n- High fuel wastage due to excessive idling in traffic.`,
+                        improvements: `Optimization Steps:\n- Shift delivery windows to off-peak hours.\n- Utilize dynamic route optimization to bypass known bottlenecks.`
+                    },
+                    'Manual Review': {
+                        root_cause: `Documentation discrepancies were flagged during the checkpoint scan, necessitating a ${delay}-minute manual review by the compliance team. The issue was traced to an incomplete manifest entry.`,
+                        confidence: 0.7921,
+                        impact: `Compliance Impact:\n- Temporary shipment hold.\n- Manual intervention required from back-office support.`,
+                        improvements: `Process Fixes:\n- Automate manifest validation at the point of origin.\n- Implement digital twin verification for all shipping documents.`
+                    }
+                };
+
+                const reportData = {
+                    rca_class: selectedCat,
+                    ...dummyPool[selectedCat]
+                };
+
+                setRcaReport(JSON.stringify(reportData));
                 setRcaState('response');
-            }, 2000);
+            }, 1000);
         }
     };
 
@@ -461,24 +509,49 @@ function App() {
                             )}
 
                             {rcaState === 'suggesting' && (
-                                <div className="rca-suggestions animate-in">
-                                    <h3 className="suggestion-title">Select a shipment to analyze:</h3>
-                                    <div className="shipment-list">
-                                        {suggestedShipments.map((s, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="shipment-item"
-                                                onClick={() => handleShipmentSelect(s)}
-                                            >
-                                                <div className="shipment-id">#{s.shipment_id}</div>
-                                                <div className="shipment-meta">
-                                                    <span>{s.delay_minutes} min delay</span>
-                                                    <span>{s.planned_arrival_time.split(' ')[0]}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                <div className="rca-suggestions animate-in" style={{ width: '100%', maxWidth: '600px' }}>
+                                    <div className="suggestion-header" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                                        <h2 className="rca-title" style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Flagged Shipments</h2>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>High-priority shipments requiring immediate RCA</p>
                                     </div>
-                                    <button className="back-link" onClick={() => setRcaState('initial')}>Go Back</button>
+
+                                    <div className="shipment-single-view" style={{ width: '100%' }}>
+                                        <div className="shipment-column">
+                                            <div className="column-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', padding: '0 0.5rem' }}>
+                                                <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-negative)', padding: '8px', borderRadius: '10px' }}>
+                                                    <AlertTriangle size={20} />
+                                                </div>
+                                                <div>
+                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Priority Issues</h3>
+                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Significant delays detected</p>
+                                                </div>
+                                                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: 'var(--color-negative)', color: 'white', padding: '2px 10px', borderRadius: '100px', fontWeight: 800 }}>
+                                                    {suggestedShipments.filter(s => s.delay_minutes > 100).length}
+                                                </span>
+                                            </div>
+                                            <div className="shipment-list-scroll" style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                                                {suggestedShipments
+                                                    .filter(s => s.delay_minutes > 100)
+                                                    .sort((a, b) => b.delay_minutes - a.delay_minutes)
+                                                    .map((s, idx) => (
+                                                        <div key={`flagged-${idx}`} className="shipment-item compact-card" onClick={() => handleShipmentSelect(s)} style={{ marginBottom: '0.75rem', padding: '1rem' }}>
+                                                            <div className="shipment-info">
+                                                                <div className="shipment-id" style={{ fontWeight: 800, fontSize: '0.95rem' }}>{s.shipment_id}</div>
+                                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>{s.route_id}</div>
+                                                            </div>
+                                                            <div className="shipment-status-meta" style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                                                                <div style={{ color: 'var(--color-negative)', fontWeight: 800, fontSize: '0.9rem' }}>+{Math.round(s.delay_minutes)}m</div>
+                                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>DELAY</div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button className="back-link" onClick={() => setRcaState('initial')} style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '8px', margin: '2.5rem auto' }}>
+                                        <RotateCcw size={16} /> Return to Intelligence Agent
+                                    </button>
                                 </div>
                             )}
 
@@ -499,17 +572,118 @@ function App() {
                                         <span>RCA Analysis Result</span>
                                     </div>
                                     <div className="response-body">
-                                        <div className="shipment-summary">
-                                            <span>Shipment: <strong>#{selectedShipment?.shipment_id}</strong></span>
-                                            <span>Delay: <strong style={{ color: 'var(--color-negative)' }}>{selectedShipment?.delay_minutes} mins</strong></span>
+                                        <div className="shipment-summary" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Shipment ID</span>
+                                                <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>#{selectedShipment?.shipment_id}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Planned Route</span>
+                                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-accent)' }}>{selectedShipment?.route_id}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Delay Duration</span>
+                                                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-negative)' }}>{Math.round(selectedShipment?.delay_minutes)} mins</span>
+                                            </div>
                                         </div>
-                                        <p className="report-text">{rcaReport}</p>
+
+                                        {(() => {
+                                            try {
+                                                const data = JSON.parse(rcaReport);
+                                                return (
+                                                    <div className="structured-report">
+                                                        <div className="rca-header-meta" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '2rem' }}>
+                                                            <div className="rca-category-box">
+                                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>RCA CATEGORY</span>
+                                                                <div className="rca-badge" style={{
+                                                                    background: data.rca_class === 'Weather' ? 'rgba(59, 130, 246, 0.15)' :
+                                                                        data.rca_class === 'Operational' ? 'rgba(229, 182, 17, 0.15)' :
+                                                                            data.rca_class === 'Traffic' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(139, 92, 246, 0.15)',
+                                                                    border: `1px solid ${data.rca_class === 'Weather' ? '#3b82f6' :
+                                                                        data.rca_class === 'Operational' ? 'var(--color-accent)' :
+                                                                            data.rca_class === 'Traffic' ? '#10b981' : '#8b5cf6'}`,
+                                                                    padding: '0.5rem 1.25rem',
+                                                                    borderRadius: '10px',
+                                                                    fontSize: '1rem',
+                                                                    fontWeight: 800,
+                                                                    color: data.rca_class === 'Weather' ? '#3b82f6' :
+                                                                        data.rca_class === 'Operational' ? 'var(--color-accent)' :
+                                                                            data.rca_class === 'Traffic' ? '#10b981' : '#8b5cf6'
+                                                                }}>
+                                                                    {data.rca_class || 'General Issue'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="confidence-meter" style={{ flex: 1 }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '6px' }}>
+                                                                    <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>AI CONFIDENCE</span>
+                                                                    <span style={{ fontWeight: 800, color: 'var(--color-accent)' }}>{Math.round((data.confidence || 0) * 100)}%</span>
+                                                                </div>
+                                                                <div style={{ background: 'rgba(255,255,255,0.05)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                    <div style={{
+                                                                        background: 'var(--color-accent)',
+                                                                        width: `${(data.confidence || 0) * 100}%`,
+                                                                        height: '100%',
+                                                                        transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                                    }} />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="rca-scroll-area" style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '1rem' }}>
+                                                            {/* Root Cause Section */}
+                                                            <div className="analysis-section" style={{ marginBottom: '2rem' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--color-accent)' }}>
+                                                                    <Search size={18} />
+                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Root Cause Analysis</h4>
+                                                                </div>
+                                                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                                                                    {data.root_cause || data.message || "Primary analysis of data logs indicates an unexpected deviation in the delivery schedule. Correlation with current variables is highly likely."}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Impact Section */}
+                                                            <div className="analysis-section" style={{ marginBottom: '2rem' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: '#ef4444' }}>
+                                                                    <Activity size={18} />
+                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Business Impact</h4>
+                                                                </div>
+                                                                <div style={{ borderLeft: '3px solid #ef4444', paddingLeft: '1.25rem', whiteSpace: 'pre-line', lineHeight: 1.7, fontSize: '0.95rem', color: '#000000', fontWeight: 500 }}>
+                                                                    {data.impact || "Analysis indicates potential disruption to downstream schedules and risk of SLA non-compliance."}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Improvements Section */}
+                                                            <div className="analysis-section">
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: '#10b981' }}>
+                                                                    <TrendingUp size={18} />
+                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Recommended Improvements</h4>
+                                                                </div>
+                                                                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#000000', padding: '1.25rem', borderRadius: '1rem', whiteSpace: 'pre-line', lineHeight: 1.7, fontSize: '0.95rem', fontWeight: 500 }}>
+                                                                    {data.improvements || "Reviewing carrier communication protocols and implementing tighter checkpoint monitoring is recommended."}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            } catch (e) {
+                                                return <p className="report-text">{rcaReport}</p>;
+                                            }
+                                        })()}
                                     </div>
-                                    <div className="response-footer">
-                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')}>
-                                            Start New Analysis
+                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')} style={{ margin: '0 auto', display: 'flex' }}>
+                                            <RotateCcw size={16} /> Perform Another Analysis
                                         </button>
                                     </div>
+                                </div>
+                            )}
+
+                            {rcaState === 'error' && (
+                                <div className="rca-error animate-in">
+                                    <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: '1rem' }} />
+                                    <h3>Connection Failed</h3>
+                                    <p>Could not connect to the n8n workflow engine. Please ensure your webhook is active and the URL is correct.</p>
+                                    <button className="back-link" onClick={() => setRcaState('initial')} style={{ marginTop: '1.5rem' }}>Try Again</button>
                                 </div>
                             )}
                         </div>

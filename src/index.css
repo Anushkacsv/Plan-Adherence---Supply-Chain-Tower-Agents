@@ -690,33 +690,48 @@ header {
 }
 
 .shipment-item {
-  padding: 1rem 1.25rem;
+  padding: 1.25rem;
   background: white;
   border: 1px solid var(--border-card);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   cursor: pointer;
   transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
 .shipment-item:hover {
   border-color: var(--color-accent);
   background-color: var(--bg-card-hover);
-  transform: scale(1.02);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.shipment-id {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.shipment-meta {
-  font-size: 0.813rem;
-  color: var(--text-muted);
+.shipment-icon-box {
+  width: 44px;
+  height: 44px;
+  background: #f8fafc;
+  border-radius: 12px;
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.shipment-item:hover .shipment-icon-box {
+  background: var(--color-accent);
+  color: #000;
+}
+
+.item-arrow {
+  transition: transform 0.2s;
+}
+
+.shipment-item:hover .item-arrow {
+  transform: translateX(4px);
+  opacity: 1 !important;
+  color: var(--color-accent);
 }
 
 .back-link {
@@ -846,4 +861,53 @@ header {
     transform: translate(-50%, -50%) scale(1);
     opacity: 0.6;
   }
+}
+
+.rca-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border: 1px solid rgba(239, 64, 64, 0.2);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 100%;
+}
+
+.rca-error h3 {
+  color: #ef4444;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.rca-error p {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.structured-report {
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.rca-badge {
+  box-shadow: 0 4px 12px var(--color-accent-glow);
+  transition: transform 0.2s;
+}
+
+.rca-badge:hover {
+  transform: translateY(-2px);
 }
