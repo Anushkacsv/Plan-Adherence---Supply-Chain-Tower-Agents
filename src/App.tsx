@@ -148,8 +148,8 @@ function App() {
             const config: any = {
                 "Orders": ['order_id', 'customer_id', 'order_date', 'priority_level', 'order_status', 'price'],
                 "Shipments": ['shipment_id', 'route_id', 'shipment_status', 'actual_dispatch_time', 'delay_minutes'],
-                "Routes": ['route_id', 'origin_city', 'destination_city', 'distance_km', 'congestion_score'],
-                "Carriers": ['carrier_id', 'carrier_name', 'sla_score', 'ontime_percentage', 'carrier_status'],
+                "Routes": ['route_id', 'origin_city', 'destination_city', 'distance_km', 'toll_cost_estimate'],
+                "Carriers": ['carrier_id', 'carrier_name', 'sla_score', 'ontime_percentage', 'avg_delay_minutes'],
                 "Warehouses": ['warehouse_id', 'warehouse_name', 'city', 'total_docks', 'warehouse_congestion_score'],
                 "Slots": ['slot_id', 'warehouse_id', 'slot_number', 'slot_status', 'waiting_time_minutes']
             };
@@ -182,7 +182,7 @@ function App() {
                     <table className="premium-table">
                         <thead>
                             <tr>
-                                {columns.map((col: any) => <th key={col}>{col.replace(/_/g, ' ')}</th>)}
+                                {columns.map((col: any) => <th key={col}>{col.replace(/_/g, ' ').replace(/minutes/gi, 'hours').replace(/mins/gi, 'hours')}</th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -194,7 +194,24 @@ function App() {
                                                 color: typeof row[col] === 'number' && row[col] > 100 ? 'var(--color-negative)' : 'inherit',
                                                 fontWeight: typeof row[col] === 'number' ? 700 : 500
                                             }}>
-                                                {row[col]?.toString() || '-'}
+                                                {(() => {
+                                                    const val = row[col];
+                                                    if (typeof val === 'number') {
+                                                        const colLower = col.toLowerCase();
+                                                        // Convert minutes to hours
+                                                        if (colLower.includes('minutes') || colLower.includes('mins')) {
+                                                            return (val / 60).toFixed(2);
+                                                        }
+                                                        // Add currency sign
+                                                        if (colLower.includes('cost') || colLower.includes('price') ||
+                                                            colLower.includes('estimate') || colLower.includes('fee') ||
+                                                            (colLower.includes('penalty') && colLower.includes('rate'))) {
+                                                            return `$${val.toLocaleString()}`;
+                                                        }
+                                                        return val.toLocaleString();
+                                                    }
+                                                    return val?.toString() || '-';
+                                                })()}
                                             </span>
                                         </td>
                                     ))}
@@ -271,29 +288,30 @@ function App() {
             setTimeout(() => {
                 const categories = ['Operational', 'Weather', 'Traffic', 'Manual Review'];
                 const selectedCat = categories[Math.floor(Math.random() * categories.length)];
-                const delay = Math.round(shipment.delay_minutes || 150);
+                const delay_val = (shipment.delay_minutes || 150);
+                const delay_hours = (delay_val / 60).toFixed(2);
 
                 const dummyPool: any = {
                     'Operational': {
-                        root_cause: `The primary root cause for the ${delay}-minute delay is identified as operational, with a confidence level of 0.7681. This indicates a disruption or inefficiency within the execution phase of the shipment, potentially related to loading/unloading processes or internal handling.`,
+                        root_cause: `The primary root cause for the ${delay_hours}-hour delay is identified as operational, with a confidence level of 0.7681. This indicates a disruption or inefficiency within the execution phase of the shipment, potentially related to loading/unloading processes or internal handling.`,
                         confidence: 0.7681,
-                        impact: `Operational Impact:\n- Direct delay of ${delay} minutes disrupting downstream logistics.\n- Increased resource idleness (driver wait time).\n\nFinancial Impact:\n- Potential for driver detention fees.\n- Risk of penalties for late delivery.`,
+                        impact: `Operational Impact:\n- Direct delay of ${delay_hours} hours disrupting downstream logistics.\n- Increased resource idleness (driver wait time).\n\nFinancial Impact:\n- Potential for driver detention fees.\n- Risk of penalties for late delivery.`,
                         improvements: `Recommended Corrective Actions:\n- Investigate specific failure points at the loading hub.\n- Review current SOPs for this operational segment.`
                     },
                     'Weather': {
-                        root_cause: `A severe weather event along the northern transit corridor has caused a ${delay}-minute deviation. Low visibility and heavy precipitation required reduced carrier speeds for safety compliance.`,
+                        root_cause: `A severe weather event along the northern transit corridor has caused a ${delay_hours}-hour deviation. Low visibility and heavy precipitation required reduced carrier speeds for safety compliance.`,
                         confidence: 0.7842,
                         impact: `Logistics Impact:\n- Speed reduction across a 200km segment.\n- Rerouting required for subsequent legs.\n\nRisk Assessment:\n- Potential for further cascaded delays in the network.`,
                         improvements: `Preventive Actions:\n- Integrate real-time weather metadata into route planning.\n- Increase buffer times during known monsoon/winter seasons.`
                     },
                     'Traffic': {
-                        root_cause: `Extreme port congestion and urban traffic volume near the destination hub resulted in a ${delay}-minute delay. The congestion index peaked at 8.4 during the transit window.`,
+                        root_cause: `Extreme port congestion and urban traffic volume near the destination hub resulted in a ${delay_hours}-hour delay. The congestion index peaked at 8.4 during the transit window.`,
                         confidence: 0.7594,
                         impact: `Network Impact:\n- Missed warehouse slot window.\n- High fuel wastage due to excessive idling in traffic.`,
                         improvements: `Optimization Steps:\n- Shift delivery windows to off-peak hours.\n- Utilize dynamic route optimization to bypass known bottlenecks.`
                     },
                     'Manual Review': {
-                        root_cause: `Documentation discrepancies were flagged during the checkpoint scan, necessitating a ${delay}-minute manual review by the compliance team. The issue was traced to an incomplete manifest entry.`,
+                        root_cause: `Documentation discrepancies were flagged during the checkpoint scan, necessitating a ${delay_hours}-hour manual review by the compliance team. The issue was traced to an incomplete manifest entry.`,
                         confidence: 0.7921,
                         impact: `Compliance Impact:\n- Temporary shipment hold.\n- Manual intervention required from back-office support.`,
                         improvements: `Process Fixes:\n- Automate manifest validation at the point of origin.\n- Implement digital twin verification for all shipping documents.`
@@ -404,8 +422,8 @@ function App() {
                                 />
                                 <KPICard
                                     index={4}
-                                    title="Average Delay (mins)"
-                                    value="80.6"
+                                    title="Average Delay (hours)"
+                                    value={(80.6 / 60).toFixed(2)}
                                     trend={-8.5}
                                     icon={<Clock size={24} />}
                                     color="#f97316"
@@ -640,7 +658,7 @@ function App() {
                                                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>{s.route_id}</div>
                                                             </div>
                                                             <div className="shipment-status-meta" style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                                                                <div style={{ color: 'var(--color-negative)', fontWeight: 800, fontSize: '0.9rem' }}>+{Math.round(s.delay_minutes)}m</div>
+                                                                <div style={{ color: 'var(--color-negative)', fontWeight: 800, fontSize: '0.9rem' }}>+{(s.delay_minutes / 60).toFixed(2)}h</div>
                                                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>DELAY</div>
                                                             </div>
                                                         </div>
@@ -683,7 +701,7 @@ function App() {
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
                                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Delay Duration</span>
-                                                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-negative)' }}>{Math.round(selectedShipment?.delay_minutes)} mins</span>
+                                                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-negative)' }}>{(selectedShipment?.delay_minutes / 60).toFixed(2)} hrs</span>
                                             </div>
                                         </div>
 

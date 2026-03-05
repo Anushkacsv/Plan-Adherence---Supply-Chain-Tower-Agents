@@ -591,13 +591,19 @@ header {
   cursor: not-allowed;
 }
 
+.rca-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .rca-content-wrapper {
-  max-width: 600px;
+  max-width: 800px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  padding-bottom: 4rem;
 }
 
 .agent-face-wrapper {
@@ -670,6 +676,7 @@ header {
 
 .rca-text-box {
   margin-bottom: 3rem;
+  text-align: center;
 }
 
 .rca-title {
