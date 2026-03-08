@@ -27,8 +27,12 @@ import {
     Truck,
     RotateCcw,
     PackageSearch,
-    AlertTriangle
+    AlertTriangle,
+    Download,
+    Mail
 } from 'lucide-react';
+
+declare const html2pdf: any;
 import {
     XAxis,
     YAxis,
@@ -293,28 +297,28 @@ function App() {
 
                 const dummyPool: any = {
                     'Operational': {
-                        root_cause: `The primary root cause for the ${delay_hours}-hour delay is identified as operational, with a confidence level of 0.7681. This indicates a disruption or inefficiency within the execution phase of the shipment, potentially related to loading/unloading processes or internal handling.`,
-                        confidence: 0.7681,
-                        impact: `Operational Impact:\n- Direct delay of ${delay_hours} hours disrupting downstream logistics.\n- Increased resource idleness (driver wait time).\n\nFinancial Impact:\n- Potential for driver detention fees.\n- Risk of penalties for late delivery.`,
-                        improvements: `Recommended Corrective Actions:\n- Investigate specific failure points at the loading hub.\n- Review current SOPs for this operational segment.`
+                        root_cause: `Detailed investigation of the origin hub's execution logs reveals that the ${delay_hours}-hour delay was primarily driven by a critical synchronization failure between the automated sorting system and manual palletization teams. During the peak 14:00-18:00 dispatch window, the facility experienced a 25% surge in unplanned volume, leading to a 'gridlock' effect at Docks 4 and 7. This operational bottleneck was further exacerbated by a temporary shortage of forklift operators, causing a cascade of missed loading slots for outbound carriers.`,
+                        confidence: 0.94,
+                        impact: `• Financial Risk Assessment: Immediate accrual of driver detention fees estimated at $150 per hour per vehicle. Prolonged delays may trigger 'Missed Slot' penalties as per the Service Level Agreement (SLA).\n• Downstream Supply Chain: The delay has already disrupted three secondary milk-run routes. Estimated recovery time for the regional distribution network is 18 hours.\n• Inventory Management: A 1.2x slowdown in warehouse inventory turnover has been recorded, potentially leading to stock-out risks at satellite distribution centers in the next 24-hour cycle.`,
+                        improvements: `1. Predictive Resource Allocation: Implement a real-time labor-to-volume matching algorithm that adjusts warehouse staffing levels 4 hours before projected peak surges, ensuring 100% palletization capacity.\n2. Autonomous Pallet Verification: Deploy AI-driven camera systems at all outbound docks to verify pallet counts and integrity against digital manifests in real-time, eliminating manual verification delays.\n3. Buffer Dock strategy: Designate 15% of total dock capacity as 'High-Velocity Lanes' reserved exclusively for premium shipments and OTIF-critical routes during peak congestion windows.\n4. Integrated Communication Portal: Establish a direct API link between warehouse management systems (WMS) and carrier dispatch to provide 30-minute proactive arrival/departure window updates.`
                     },
                     'Weather': {
-                        root_cause: `A severe weather event along the northern transit corridor has caused a ${delay_hours}-hour deviation. Low visibility and heavy precipitation required reduced carrier speeds for safety compliance.`,
-                        confidence: 0.7842,
-                        impact: `Logistics Impact:\n- Speed reduction across a 200km segment.\n- Rerouting required for subsequent legs.\n\nRisk Assessment:\n- Potential for further cascaded delays in the network.`,
-                        improvements: `Preventive Actions:\n- Integrate real-time weather metadata into route planning.\n- Increase buffer times during known monsoon/winter seasons.`
+                        root_cause: `The shipment encountered a severe 'Category 4' precipitation event while transiting the northern corridor, specifically across the high-elevation segment between Kilometer 140 and 280. Real-time telemetry data confirms that low visibility and hydroplaning risks necessitated a safety-mandated speed reduction to 35 km/h (a 45% drop from the planned transit speed). This environmental constraint directly resulted in a ${delay_hours}-hour deviation from the scheduled arrival at the destination hub. There were no reported safety incidents during this transit deviation.`,
+                        confidence: 0.91,
+                        impact: `• Safety & Compliance Status: 100% adherence to the 'Environmental Safety Protocol' maintained; zero collision or cargo damage risk reported during the storm navigation.\n• Service Reliability: This delay has triggered a 'Force Majeure' clause notification for the client. Proactive rerouting of the follow-up shipment is now required to maintain inventory levels.\n• Logistics Scalability: Regional carrier availability has dropped by 15% due to similar weather-related disruptions across the northern fleet, tightening the spot market capacity.`,
+                        improvements: `1. Dynamic Meteorology Routing (DMR): Integrate advanced hyperspectral weather forecasting into the route planning engine to automatically divert shipments to 'Clear-Sky' corridors at least 12 hours prior to storm impact.\n2. Seasonal Buffer Optimization: Up-calibrate the 'Standard Transit Time' (STT) by 12.5% for all northern routes during the high-risk November-February window to better manage client expectations and SLA commitments.\n3. IoT Cargo-Sense Integration: Deploy humidity and impact sensors for all high-value loads transiting storm zones to provide real-time assurance of cargo integrity during adverse weather events.\n4. Proactive SLA Mitigation: Automate' Delay-Risk' notifications to end-customers 2 hours after a weather-induced deviation is detected, offering alternative delivery windows or pickup points.`
                     },
                     'Traffic': {
-                        root_cause: `Extreme port congestion and urban traffic volume near the destination hub resulted in a ${delay_hours}-hour delay. The congestion index peaked at 8.4 during the transit window.`,
-                        confidence: 0.7594,
-                        impact: `Network Impact:\n- Missed warehouse slot window.\n- High fuel wastage due to excessive idling in traffic.`,
-                        improvements: `Optimization Steps:\n- Shift delivery windows to off-peak hours.\n- Utilize dynamic route optimization to bypass known bottlenecks.`
+                        root_cause: `The ${delay_hours}-hour arrival delay was caused by extreme port congestion and unplanned road maintenance operations within a 5km radius of the destination terminal. The 'Congestion Index' for this urban segment peaked at 8.7/10, significantly exceeding the historical average of 4.3 for this time window. Carrier telemetry indicates that the vehicle spent over 90 minutes in a 'Zero-Movement' state at the terminal gate due to a failure in the smart-gate RFID verification system, which necessitated manual security clearance for all inbound loads.`,
+                        confidence: 0.89,
+                        impact: `• Driver Compliance Risk: The extended idling and gate-wait time have pushed the driver close to the maximum 'Hours of Service' (HOS) limit. A mandatory 10-hour rest period is now required, delaying the return leg.\n• Operational Overload: The missed slot has caused a bottleneck at the destination dock, resulting in a 2.5-hour wait time for three subsequent scheduled arrivals.\n• Asset Efficiency: Significant increase in fuel consumption and carbon footprint (estimated 18L wasted) due to prolonged engine idling in the port queue.`,
+                        improvements: `1. Night-Shift Logistics Synchrony: Re-align regional delivery windows to the 22:00 - 04:00 'Low-Traffic' window, reducing average transit times by 28% and avoiding terminal peak-hours.\n2. Geo-Fenced Gate-Pass: Implement an automated GPS-triggered gate request system that secures a dock slot 45 minutes before arrival, bypassing manual entry queues for pre-verified carriers.\n3. Alternative Hub Analysis: Conduct a strategic review of secondary 'Satellite Gates' for regional shipments to circumvent primary port bottlenecks during high-congestion periods.\n4. Predictive Traffic Modeling: Utilize historical and real-time Google Maps/Waze API data to adjust route planning dynamically every 20 minutes, steering carriers away from emerging urban congestion zones.`
                     },
                     'Manual Review': {
-                        root_cause: `Documentation discrepancies were flagged during the checkpoint scan, necessitating a ${delay_hours}-hour manual review by the compliance team. The issue was traced to an incomplete manifest entry.`,
-                        confidence: 0.7921,
-                        impact: `Compliance Impact:\n- Temporary shipment hold.\n- Manual intervention required from back-office support.`,
-                        improvements: `Process Fixes:\n- Automate manifest validation at the point of origin.\n- Implement digital twin verification for all shipping documents.`
+                        root_cause: `A critical 'Documentation Variance' was flagged during the final checkpoint scan, necessitating a ${delay_hours}-hour manual compliance hold. The issue was traced to an inconsistency between the physical pallet barcodes and the digital manifest generated at the origin warehouse. Specifically, three units of high-priority SKU-902 were missing their secondary compliance stickers, triggering an automated 'Security Halt' in the distribution system. This required a hand-reconciliation of the entire load by the quality assurance (QA) team before the shipment could be released for final-mile delivery.`,
+                        confidence: 0.95,
+                        impact: `• Audit & Compliance: A 'Major Non-Conformance' has been logged against the origin facility's QA protocol. This may trigger a mandatory site audit if similar incidents recur within the quarter.\n• Human Resource Drain: Engagement of the senior compliance team for 4.5 man-hours to perform manual reconciliation and manifest updates.\n• Data Integrity: The 'Digital Twin' accuracy for this shipment dropped to 0%, necessitating a full system reset for the tracking history to align with the physical load state.`,
+                        improvements: `1. Origin-Source Digital Shield: Implement a 'Zero-Error' scanning protocol at the loading dock where the system refuses to print the BOL (Bill of Lading) until every physical SKU is matched to the digital order.\n2. Manifest AI OCR: Deploy Optical Character Recognition (OCR) technology at checkpoints to cross-verify physical shipping labels against digital manifests in under 5 seconds, reducing manual check times.\n3. Blockchain-Verified Manifests: Establish a decentralized ledger for all shipping documents to ensure that any modification at the warehouse is instantly reflected across all checkpoints, preventing data mismatches.\n4. QA Training & Incentives: Conduct a 'Compliance Excellence' workshop for origin-hub staff, focusing on secondary labelling protocols and the business impact of documentation errors.`
                     }
                 };
 
@@ -326,6 +330,63 @@ function App() {
                 setRcaReport(JSON.stringify(reportData));
                 setRcaState('response');
             }, 1000);
+        }
+    };
+
+    const handleDownloadPDF = () => {
+        const element = document.querySelector('.rca-response-content'); // I should add this class to the content area
+        const target = element || document.querySelector('.rca-response');
+        if (!target || typeof html2pdf === 'undefined') {
+            console.error("PDF generator not found or element missing");
+            return;
+        }
+
+        const opt = {
+            margin: 10,
+            filename: `RCA_Report_${selectedShipment?.shipment_id || 'Shipment'}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Temporarily hide buttons for clean export
+        const buttons = document.querySelectorAll('.rca-action-btn.small');
+        buttons.forEach((btn: any) => btn.style.opacity = '0');
+
+        html2pdf().from(target).set(opt).save().finally(() => {
+            buttons.forEach((btn: any) => btn.style.opacity = '1');
+        });
+    };
+
+    const handleSendEmail = async () => {
+        if (!selectedShipment || !rcaReport) return;
+
+        const email = prompt("Enter recipient email address:", "admin@example.com");
+        if (!email) return;
+
+        try {
+            const data = JSON.parse(rcaReport);
+            const response = await fetch('/api/email/email-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipient_email: email,
+                    report_data: {
+                        shipment_id: selectedShipment.shipment_id,
+                        ...data
+                    }
+                })
+            });
+
+            const result = await response.json();
+            if (result.status === 'success') {
+                alert("Report sent to " + email + " successfully!");
+            } else {
+                alert("Failed to send email: " + result.message);
+            }
+        } catch (error) {
+            console.error("Email error:", error);
+            alert("Error connecting to email service.");
         }
     };
 
@@ -689,7 +750,7 @@ function App() {
                                         <Bot size={24} color="var(--color-accent)" />
                                         <span>RCA Analysis Result</span>
                                     </div>
-                                    <div className="response-body">
+                                    <div className="response-body rca-response-content">
                                         <div className="shipment-summary" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Shipment ID</span>
@@ -788,9 +849,15 @@ function App() {
                                             }
                                         })()}
                                     </div>
-                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
-                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')} style={{ margin: '0 auto', display: 'flex' }}>
-                                            <RotateCcw size={16} /> Perform Another Analysis
+                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                        <button className="rca-action-btn small" onClick={handleDownloadPDF} style={{ background: 'var(--color-positive)', color: 'white', border: 'none', margin: '0', width: 'auto' }}>
+                                            <Download size={16} /> Download PDF
+                                        </button>
+                                        <button className="rca-action-btn small" onClick={handleSendEmail} style={{ background: '#3b82f6', color: 'white', border: 'none', margin: '0', width: 'auto' }}>
+                                            <Mail size={16} /> Send Email
+                                        </button>
+                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')} style={{ margin: '0', width: 'auto' }}>
+                                            <RotateCcw size={16} /> New Analysis
                                         </button>
                                     </div>
                                 </div>

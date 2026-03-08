@@ -10,6 +10,11 @@ export default defineConfig({
         target: 'https://n8n.sofiatechnology.ai',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/n8n/, '/webhook-test/rca-report')
+      },
+      '/api/email': {
+        target: 'http://localhost:10000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/email/, '')
       }
     }
   }

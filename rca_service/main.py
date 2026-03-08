@@ -19,11 +19,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define file paths for models
-MODEL_PATH = "models/rca_model.pkl"
-ENCODER_PATH = "models/label_encoder.pkl"
-IMPUTER_PATH = "models/imputer.pkl"
-FEATURES_PATH = "models/features.pkl"
+# Define file paths for models relative to current script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "rca_model.pkl")
+ENCODER_PATH = os.path.join(BASE_DIR, "models", "label_encoder.pkl")
+IMPUTER_PATH = os.path.join(BASE_DIR, "models", "imputer.pkl")
+FEATURES_PATH = os.path.join(BASE_DIR, "models", "features.pkl")
 
 # Global variables to hold loaded artifacts
 model = None
@@ -46,9 +47,9 @@ def load_models():
         imputer = joblib.load(IMPUTER_PATH)
         feature_names = joblib.load(FEATURES_PATH)
             
-        print("✅ All ML artifacts loaded successfully.")
+        print("SUCCESS: All ML artifacts loaded successfully.")
     except Exception as e:
-        print(f"❌ Error loading models: {e}")
+        print(f"ERROR: Error loading models: {e}")
         raise e
 
 class PredictionInput(BaseModel):
@@ -134,6 +135,64 @@ async def predict(input_data: PredictionInput):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/email-report")
+async def email_report(request: Dict):
+    """
+    Send the RCA report via email.
+    """
+    try:
+        recipient_email = request.get("recipient_email", "admin@example.com")
+        report_data = request.get("report_data", {})
+        
+        # SMTP Configuration (Placeholder - User should configure these)
+        SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+        SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+        SMTP_USER = os.environ.get("SMTP_USER", "anushka.r@ofiservices.com")
+        SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+        
+        if not SMTP_USER or not SMTP_PASSWORD:
+            # For demo purposes, we'll just log it
+            print(f"MOCK EMAIL SENT to {recipient_email}")
+            return {"status": "success", "message": "Email sent successfully (Simulated)"}
+
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = recipient_email
+        msg['Subject'] = f"RCA Report for Shipment #{report_data.get('shipment_id')}"
+
+        body = f"""
+Supply Chain RCA Intelligence Report
+-----------------------------------
+Shipment ID: #{report_data.get('shipment_id')}
+RCA Category: {report_data.get('rca_class')}
+Confidence: {float(report_data.get('confidence', 0)) * 100:.2f}%
+
+Root Cause Analysis:
+{report_data.get('root_cause')}
+
+Business Impact:
+{report_data.get('impact')}
+
+Recommended Improvements:
+{report_data.get('improvements')}
+        """
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+
+        return {"status": "success", "message": "Email sent successfully"}
+    except Exception as e:
+        print(f"Email Error: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.get("/")
 async def health_check():
