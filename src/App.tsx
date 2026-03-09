@@ -29,8 +29,11 @@ import {
     PackageSearch,
     AlertTriangle,
     Download,
-    Mail
+    Mail,
+    Table,
+    LayoutDashboard
 } from 'lucide-react';
+import { SlotAssignmentView } from './components/SlotAssignment/SlotAssignmentView';
 
 declare const html2pdf: any;
 import {
@@ -69,6 +72,9 @@ const KPICard: React.FC<KPICardProps> = ({ title, value, trend, icon, color, ind
                         </div>
                     )}
                 </div>
+            </div>
+            <div className="kpi-icon-bg" style={{ color: color }}>
+                {icon}
             </div>
         </div>
     );
@@ -112,11 +118,13 @@ function App() {
     const [rcaReport, setRcaReport] = useState<string>('');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [allTables, setAllTables] = useState<any>(null);
+    const [dashboardKpis, setDashboardKpis] = useState<any>(null);
+    const [masterKpis, setMasterKpis] = useState<any>(null);
 
     const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: <Activity size={18} /> },
+        { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
         { id: 'rca', label: 'RCA Analysis', icon: <Search size={18} /> },
-        { id: 'transport', label: 'Transport Optimizer', icon: <Truck size={18} /> },
+        { id: 'transport', label: 'Slot Optimizer', icon: <Table size={18} /> },
         { id: 'reverse', label: 'Reverse Logistics', icon: <RotateCcw size={18} /> },
         { id: 'consolidation', label: 'Load Consolidation', icon: <Layers size={18} /> },
         { id: 'disruption', label: 'Disruption Response', icon: <AlertTriangle size={18} /> }
@@ -129,6 +137,8 @@ function App() {
             .then(data => {
                 if (data.shipments) setSuggestedShipments(data.shipments);
                 if (data.tables) setAllTables(data.tables);
+                if (data.kpis) setDashboardKpis(data.kpis);
+                if (data.master_kpis) setMasterKpis(data.master_kpis);
             })
             .catch(err => console.error("Error loading dashboard data:", err));
     }, []);
@@ -139,7 +149,11 @@ function App() {
 
     const DataTableViewer = ({ data }: { data: any }) => {
         if (!data) return null;
-        const [activeTableTab, setActiveTableTab] = useState(Object.keys(data)[0]);
+
+        const excludedTabs = ['Slots_Logistics', 'Slots_Master', 'Docks_Master'];
+        const availableTabs = Object.keys(data).filter(tab => !excludedTabs.includes(tab));
+
+        const [activeTableTab, setActiveTableTab] = useState(availableTabs[0] || Object.keys(data)[0]);
         const [currentPage, setCurrentPage] = useState(0);
         const rowsPerPage = 10;
 
@@ -171,7 +185,7 @@ function App() {
                 </div>
 
                 <div className="data-tabs">
-                    {Object.keys(data).map((tab: any) => (
+                    {availableTabs.map((tab: any) => (
                         <div
                             key={tab}
                             className={`data-tab ${activeTableTab === tab ? 'active' : ''}`}
@@ -471,7 +485,7 @@ function App() {
                                     value="28.5%"
                                     trend={-12.4}
                                     icon={<TrendingUp size={24} />}
-                                    color="#3b82f6"
+                                    color="#8b5cf6"
                                 />
                                 <KPICard
                                     index={3}
@@ -492,8 +506,8 @@ function App() {
                                 <KPICard
                                     index={5}
                                     title="Slot Capacity %"
-                                    value="76.8%"
-                                    trend={4.1}
+                                    value={`${dashboardKpis?.util || 76.8}%`}
+                                    trend={+4.1}
                                     icon={<Layers size={24} />}
                                     color="#8b5cf6"
                                 />
@@ -555,8 +569,8 @@ function App() {
                                                 <stop offset="100%" stopColor="#10b981" stopOpacity={1} />
                                             </linearGradient>
                                             <linearGradient id="barGradientUnprod" x1="0" y1="0" x2="1" y2="0">
-                                                <stop offset="0%" stopColor="#f87171" stopOpacity={1} />
-                                                <stop offset="100%" stopColor="#ef4444" stopOpacity={1} />
+                                                <stop offset="0%" stopColor="#f87171" stopOpacity={0.1} />
+                                                <stop offset="100%" stopColor="#ef4444" stopOpacity={0.1} />
                                             </linearGradient>
                                         </defs>
                                         <XAxis type="number" hide />
@@ -789,102 +803,94 @@ function App() {
                                                                         data.rca_class === 'Operational' ? 'var(--color-accent)' :
                                                                             data.rca_class === 'Traffic' ? '#10b981' : '#8b5cf6'
                                                                 }}>
-                                                                    {data.rca_class || 'General Issue'}
+                                                                    {data.rca_class}
                                                                 </div>
                                                             </div>
                                                             <div className="confidence-meter" style={{ flex: 1 }}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '6px' }}>
-                                                                    <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>AI CONFIDENCE</span>
-                                                                    <span style={{ fontWeight: 800, color: 'var(--color-accent)' }}>{Math.round((data.confidence || 0) * 100)}%</span>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>AI CONFIDENCE SCORE</span>
+                                                                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-positive)' }}>{(data.confidence * 100).toFixed(1)}%</span>
                                                                 </div>
-                                                                <div style={{ background: 'rgba(255,255,255,0.05)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                                                                    <div style={{
-                                                                        background: 'var(--color-accent)',
-                                                                        width: `${(data.confidence || 0) * 100}%`,
-                                                                        height: '100%',
-                                                                        transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'
-                                                                    }} />
+                                                                <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                                                                    <div style={{ height: '100%', width: `${data.confidence * 100}%`, background: 'var(--color-positive)', borderRadius: '10px' }}></div>
                                                                 </div>
                                                             </div>
                                                         </div>
 
-                                                        <div className="rca-scroll-area" style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '1rem' }}>
-                                                            {/* Root Cause Section */}
-                                                            <div className="analysis-section" style={{ marginBottom: '2rem' }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: 'var(--color-accent)' }}>
-                                                                    <Search size={18} />
-                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Root Cause Analysis</h4>
-                                                                </div>
-                                                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                                                                    {data.root_cause || data.message || "Primary analysis of data logs indicates an unexpected deviation in the delivery schedule. Correlation with current variables is highly likely."}
-                                                                </div>
-                                                            </div>
+                                                        <div className="report-section" style={{ marginBottom: '2rem' }}>
+                                                            <h3 style={{ fontSize: '0.9rem', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <Activity size={16} /> Root Cause Investigation
+                                                            </h3>
+                                                            <p style={{ lineHeight: 1.7, color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>{data.root_cause}</p>
+                                                        </div>
 
-                                                            {/* Impact Section */}
-                                                            <div className="analysis-section" style={{ marginBottom: '2rem' }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: '#ef4444' }}>
-                                                                    <Activity size={18} />
-                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Business Impact</h4>
-                                                                </div>
-                                                                <div style={{ borderLeft: '3px solid #ef4444', paddingLeft: '1.25rem', whiteSpace: 'pre-line', lineHeight: 1.7, fontSize: '0.95rem', color: '#000000', fontWeight: 500 }}>
-                                                                    {data.impact || "Analysis indicates potential disruption to downstream schedules and risk of SLA non-compliance."}
-                                                                </div>
-                                                            </div>
+                                                        <div className="report-section" style={{ marginBottom: '2rem', padding: '1.25rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <h3 style={{ fontSize: '0.9rem', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <Activity size={16} /> Operational Impact Assessment
+                                                            </h3>
+                                                            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{data.impact}</div>
+                                                        </div>
 
-                                                            {/* Improvements Section */}
-                                                            <div className="analysis-section">
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', color: '#10b981' }}>
-                                                                    <TrendingUp size={18} />
-                                                                    <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800, fontSize: '0.9rem' }}>Recommended Improvements</h4>
-                                                                </div>
-                                                                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#000000', padding: '1.25rem', borderRadius: '1rem', whiteSpace: 'pre-line', lineHeight: 1.7, fontSize: '0.95rem', fontWeight: 500 }}>
-                                                                    {data.improvements || "Reviewing carrier communication protocols and implementing tighter checkpoint monitoring is recommended."}
-                                                                </div>
-                                                            </div>
+                                                        <div className="report-section">
+                                                            <h3 style={{ fontSize: '0.9rem', color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <Activity size={16} /> Adaptive Recommendations
+                                                            </h3>
+                                                            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8, color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 600 }}>{data.improvements}</div>
                                                         </div>
                                                     </div>
                                                 );
                                             } catch (e) {
-                                                return <p className="report-text">{rcaReport}</p>;
+                                                return <div className="raw-response">{rcaReport}</div>;
                                             }
                                         })()}
                                     </div>
-                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                        <button className="rca-action-btn small" onClick={handleDownloadPDF} style={{ background: 'var(--color-positive)', color: 'white', border: 'none', margin: '0', width: 'auto' }}>
-                                            <Download size={16} /> Download PDF
+                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem', marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                        <button className="rca-action-btn small" onClick={handleDownloadPDF} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px', background: 'var(--bg-main)', border: '1px solid var(--border-card)' }}>
+                                            <Download size={16} /> Export PDF
                                         </button>
-                                        <button className="rca-action-btn small" onClick={handleSendEmail} style={{ background: '#3b82f6', color: 'white', border: 'none', margin: '0', width: 'auto' }}>
-                                            <Mail size={16} /> Send Email
+                                        <button className="rca-action-btn small" onClick={handleSendEmail} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px', background: 'rgba(229, 182, 17, 0.1)', border: '1px solid var(--color-accent)', color: 'var(--color-accent)' }}>
+                                            <Mail size={16} /> Share via Email
                                         </button>
-                                        <button className="rca-action-btn small" onClick={() => setRcaState('initial')} style={{ margin: '0', width: 'auto' }}>
-                                            <RotateCcw size={16} /> New Analysis
+                                        <button className="rca-action-btn small" onClick={() => setRcaState('suggesting')} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px' }}>
+                                            Analyze Another
                                         </button>
                                     </div>
                                 </div>
                             )}
 
                             {rcaState === 'error' && (
-                                <div className="rca-error animate-in">
-                                    <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: '1rem' }} />
-                                    <h3>Connection Failed</h3>
-                                    <p>Could not connect to the n8n workflow engine. Please ensure your webhook is active and the URL is correct.</p>
-                                    <button className="back-link" onClick={() => setRcaState('initial')} style={{ marginTop: '1.5rem' }}>Try Again</button>
+                                <div className="rca-error">
+                                    <AlertTriangle size={48} color="var(--color-negative)" />
+                                    <p>Connection to analysis service failed.</p>
+                                    <button onClick={() => setRcaState('initial')}>Retry</button>
                                 </div>
                             )}
+
+                            <button className="back-link" onClick={() => setActiveTab('dashboard')} style={{ marginTop: '2rem' }}>
+                                <ChevronLeft size={16} /> Back to Dashboard
+                            </button>
                         </div>
                     </div>
+                ) : activeTab === 'transport' ? (
+                    <SlotAssignmentView
+                        masterKpis={masterKpis}
+                        allTables={allTables}
+                        suggestedShipments={suggestedShipments}
+                    />
                 ) : (
                     <div className="placeholder-view">
                         <div className="empty-state">
-                            <Sparkles size={48} color="var(--color-accent)" />
-                            <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module</h2>
-                            <p>This module is currently being optimized for your workflow.</p>
+                            <Bot size={64} color="var(--color-accent)" />
+                            <h2>{navItems.find(i => i.id === activeTab)?.label} Agent</h2>
+                            <p>This module is currently being optimized by our AI engineering team.</p>
+                            <button className="rca-action-btn" onClick={() => setActiveTab('dashboard')} style={{ marginTop: '2rem', justifyContent: 'center' }}>
+                                Back to Dashboard
+                            </button>
                         </div>
                     </div>
-                )
-                }
-            </main >
-        </div >
+                )}
+            </main>
+        </div>
     );
 }
 
