@@ -771,7 +771,7 @@ function App() {
                             )}
 
                             {rcaState === 'suggesting' && (
-                                <div className="rca-suggestions animate-in" style={{ width: '100%', maxWidth: '600px' }}>
+                                <div className="rca-suggestions animate-in" style={{ width: '100%', maxWidth: '100%' }}>
                                     <div className="suggestion-header" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
                                         <h2 className="rca-title" style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Flagged Shipments</h2>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>High-priority shipments requiring immediate RCA</p>
@@ -791,22 +791,36 @@ function App() {
                                                     {suggestedShipments.filter(s => s.delay_minutes > 100).length}
                                                 </span>
                                             </div>
-                                            <div className="shipment-list-scroll" style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                                                {suggestedShipments
-                                                    .filter(s => s.delay_minutes > 100)
-                                                    .sort((a, b) => b.delay_minutes - a.delay_minutes)
-                                                    .map((s, idx) => (
-                                                        <div key={`flagged-${idx}`} className="shipment-item compact-card" onClick={() => handleShipmentSelect(s)} style={{ marginBottom: '0.75rem', padding: '1rem' }}>
-                                                            <div className="shipment-info">
-                                                                <div className="shipment-id" style={{ fontWeight: 800, fontSize: '0.95rem' }}>{s.shipment_id}</div>
-                                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>{s.route_id}</div>
+                                            <div className="shipment-grid-full" style={{ width: '100%', marginTop: '1.5rem' }}>
+                                                <div className="shipment-list-grid" style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+                                                    gap: '1.5rem',
+                                                    width: '100%'
+                                                }}>
+                                                    {suggestedShipments
+                                                        .filter(s => s.delay_minutes > 100)
+                                                        .sort((a, b) => b.delay_minutes - a.delay_minutes)
+                                                        .map((s, idx) => (
+                                                            <div key={`flagged-${idx}`} className="shipment-sexy-card" onClick={() => handleShipmentSelect(s)} style={{ margin: 0 }}>
+                                                                <div className="id-badge">
+                                                                    <div className="id-icon-circle">
+                                                                        <Truck size={20} />
+                                                                    </div>
+                                                                    <div className="shipment-meta-info">
+                                                                        <div className="shipment-label-id">{s.shipment_id}</div>
+                                                                        <div className="shipment-label-route">
+                                                                            <Activity size={12} /> {s.route_id}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="delay-tag-sexy">
+                                                                    <div className="pulse-warning"></div>
+                                                                    +{(s.delay_minutes / 60).toFixed(2)}h
+                                                                </div>
                                                             </div>
-                                                            <div className="shipment-status-meta" style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                                                                <div style={{ color: 'var(--color-negative)', fontWeight: 800, fontSize: '0.9rem' }}>+{(s.delay_minutes / 60).toFixed(2)}h</div>
-                                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>DELAY</div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                        ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
