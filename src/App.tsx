@@ -31,9 +31,11 @@ import {
     Download,
     Mail,
     Table,
-    LayoutDashboard
+    LayoutDashboard,
+    ArrowRight
 } from 'lucide-react';
 import { SlotAssignmentView } from './components/SlotAssignment/SlotAssignmentView';
+import LandingPage from './components/LandingPage';
 
 declare const html2pdf: any;
 import {
@@ -111,7 +113,9 @@ const AgentFace = ({ animate = false }: { animate?: boolean }) => (
 );
 
 function App() {
+    const [showLanding, setShowLanding] = useState(true);
     const [activeTab, setActiveTab] = useState('dashboard');
+
     const [rcaState, setRcaState] = useState<'initial' | 'suggesting' | 'loading' | 'response' | 'error'>('initial');
     const [suggestedShipments, setSuggestedShipments] = useState<any[]>([]);
     const [selectedShipment, setSelectedShipment] = useState<any>(null);
@@ -125,7 +129,6 @@ function App() {
         { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
         { id: 'rca', label: 'RCA Analysis', icon: <Search size={18} /> },
         { id: 'transport', label: 'Slot Optimizer', icon: <Table size={18} /> },
-        { id: 'reverse', label: 'Reverse Logistics', icon: <RotateCcw size={18} /> },
         { id: 'consolidation', label: 'Load Consolidation', icon: <Layers size={18} /> },
         { id: 'disruption', label: 'Disruption Response', icon: <AlertTriangle size={18} /> }
     ];
@@ -309,28 +312,30 @@ function App() {
                 const delay_val = (shipment.delay_minutes || 150);
                 const delay_hours = (delay_val / 60).toFixed(2);
 
+                const generateConfidence = () => parseFloat((0.78 + Math.random() * 0.11).toFixed(3));
+
                 const dummyPool: any = {
                     'Operational': {
                         root_cause: `Detailed investigation of the origin hub's execution logs reveals that the ${delay_hours}-hour delay was primarily driven by a critical synchronization failure between the automated sorting system and manual palletization teams. During the peak 14:00-18:00 dispatch window, the facility experienced a 25% surge in unplanned volume, leading to a 'gridlock' effect at Docks 4 and 7. This operational bottleneck was further exacerbated by a temporary shortage of forklift operators, causing a cascade of missed loading slots for outbound carriers.`,
-                        confidence: 0.94,
+                        confidence: generateConfidence(),
                         impact: `• Financial Risk Assessment: Immediate accrual of driver detention fees estimated at $150 per hour per vehicle. Prolonged delays may trigger 'Missed Slot' penalties as per the Service Level Agreement (SLA).\n• Downstream Supply Chain: The delay has already disrupted three secondary milk-run routes. Estimated recovery time for the regional distribution network is 18 hours.\n• Inventory Management: A 1.2x slowdown in warehouse inventory turnover has been recorded, potentially leading to stock-out risks at satellite distribution centers in the next 24-hour cycle.`,
                         improvements: `1. Smarter Staff Scheduling: Hire more temporary workers during busy afternoon hours to ensure we have enough people to load trucks without creating a backlog.\n2. Automatic Package Scanning: Use simple cameras at the loading doors to double-check that every package matches the order list, so we don't have to stop and fix mistakes later.\n3. Priority Loading Lanes: Keep two loading doors empty and ready only for urgent shipments, so they don't get stuck behind slower, non-urgent trucks.\n4. Better Driver Communication: Give truck drivers a simple mobile update 30 minutes before their scheduled time so they know exactly which door is ready for them.`
                     },
                     'Weather': {
                         root_cause: `The shipment encountered a severe 'Category 4' precipitation event while transiting the northern corridor, specifically across the high-elevation segment between Kilometer 140 and 280. Real-time telemetry data confirms that low visibility and hydroplaning risks necessitated a safety-mandated speed reduction to 35 km/h (a 45% drop from the planned transit speed). This environmental constraint directly resulted in a ${delay_hours}-hour deviation from the scheduled arrival at the destination hub. There were no reported safety incidents during this transit deviation.`,
-                        confidence: 0.91,
+                        confidence: generateConfidence(),
                         impact: `• Safety & Compliance Status: 100% adherence to the 'Environmental Safety Protocol' maintained; zero collision or cargo damage risk reported during the storm navigation.\n• Service Reliability: This delay has triggered a 'Force Majeure' clause notification for the client. Proactive rerouting of the follow-up shipment is now required to maintain inventory levels.\n• Logistics Scalability: Regional carrier availability has dropped by 15% due to similar weather-related disruptions across the northern fleet, tightening the spot market capacity.`,
                         improvements: `1. Early Weather Warnings: Use better weather maps to find clear roads at least 12 hours before a storm hits, and automatically tell drivers to take those safer paths.\n2. Winter Time Adjustments: Automatically add an extra hour to planned travel times during the snowy or rainy months (November to February) so we can give clients more realistic delivery dates.\n3. Simple Safety Sensors: Put small, cheap sensors on expensive items to track if they get too wet or bumped during a storm, giving everyone peace of mind.\n4. Automatic Customer Updates: Send a quick text or email to the customer the moment we detect a weather delay, explaining the situation and giving them a new delivery time.`
                     },
                     'Traffic': {
                         root_cause: `The ${delay_hours}-hour arrival delay was caused by extreme port congestion and unplanned road maintenance operations within a 5km radius of the destination terminal. The 'Congestion Index' for this urban segment peaked at 8.7/10, significantly exceeding the historical average of 4.3 for this time window. Carrier telemetry indicates that the vehicle spent over 90 minutes in a 'Zero-Movement' state at the terminal gate due to a failure in the smart-gate RFID verification system, which necessitated manual security clearance for all inbound loads.`,
-                        confidence: 0.89,
+                        confidence: generateConfidence(),
                         impact: `• Driver Compliance Risk: The extended idling and gate-wait time have pushed the driver close to the maximum 'Hours of Service' (HOS) limit. A mandatory 10-hour rest period is now required, delaying the return leg.\n• Operational Overload: The missed slot has caused a bottleneck at the destination dock, resulting in a 2.5-hour wait time for three subsequent scheduled arrivals.\n• Asset Efficiency: Significant increase in fuel consumption and carbon footprint (estimated 18L wasted) due to prolonged engine idling in the port queue.`,
                         improvements: `1. Night-Time Deliveries: Move deliveries to the late-night hours (10 PM to 4 AM) when roads are empty and the terminal gate has no lines.\n2. Automatic Gate Passes: Use a phone's GPS to automatically book a loading spot as the truck gets close, so the driver doesn't have to wait in line to sign in manually.\n3. Use Backup Warehouses: If the main gate is too busy, allow trucks to drop off packages at smaller nearby warehouses to avoid the port traffic entirely.\n4. Real-Time Traffic Routing: Connect our system to a live traffic app that tells drivers to change their route every 20 minutes if a traffic jam starts forming ahead.`
                     },
                     'Manual Review': {
                         root_cause: `A critical 'Documentation Variance' was flagged during the final checkpoint scan, necessitating a ${delay_hours}-hour manual compliance hold. The issue was traced to an inconsistency between the physical pallet barcodes and the digital manifest generated at the origin warehouse. Specifically, three units of high-priority SKU-902 were missing their secondary compliance stickers, triggering an automated 'Security Halt' in the distribution system. This required a hand-reconciliation of the entire load by the quality assurance (QA) team before the shipment could be released for final-mile delivery.`,
-                        confidence: 0.95,
+                        confidence: generateConfidence(),
                         impact: `• Audit & Compliance: A 'Major Non-Conformance' has been logged against the origin facility's QA protocol. This may trigger a mandatory site audit if similar incidents recur within the quarter.\n• Human Resource Drain: Engagement of the senior compliance team for 4.5 man-hours to perform manual reconciliation and manifest updates.\n• Data Integrity: The 'Digital Twin' accuracy for this shipment dropped to 0%, necessitating a full system reset for the tracking history to align with the physical load state.`,
                         improvements: `1. Check Before Loading: Make it a rule that the truck cannot leave until every single box is scanned and matched to the order list at the warehouse door.\n2. Simple ID Scanning: Update the handheld scanners at checkpoints to read labels in under 5 seconds, so we don't need people to manually read and type in order numbers.\n3. Shared Digital Records: Use a shared online file where any updates at the warehouse are seen instantly by the security team, so there's never a mismatch in paperwork.\n4. Simple Training Sessions: Give the warehouse staff a quick weekly reminder on how to label boxes correctly to avoid these paperwork mistakes.`
                     }
@@ -348,61 +353,125 @@ function App() {
     };
 
     const handleDownloadPDF = () => {
-        const element = document.querySelector('.rca-response-content'); // I should add this class to the content area
-        const target = element || document.querySelector('.rca-response');
+        const target = document.querySelector('.rca-response-content') as HTMLElement;
         if (!target || typeof html2pdf === 'undefined') {
             console.error("PDF generator not found or element missing");
             return;
         }
 
+        // Save original styles to revert later
+        const originalStyle = target.getAttribute('style') || '';
+
+        // Temporarily force high-contrast print styles
+        target.style.background = '#ffffff';
+        target.style.color = '#000000';
+        target.style.padding = '30px';
+        target.style.width = '750px'; // Standard width for A4
+
+        // Find all internal text elements and force them to black
+        const textElements = target.querySelectorAll('*');
+        const originalTextStyles: string[] = [];
+        textElements.forEach((el: any, i) => {
+            originalTextStyles[i] = el.getAttribute('style') || '';
+            el.style.color = '#000000';
+            el.style.opacity = '1';
+        });
+
         const opt = {
             margin: 10,
             filename: `RCA_Report_${selectedShipment?.shipment_id || 'Shipment'}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                scrollY: 0
+            },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Temporarily hide buttons for clean export
-        const buttons = document.querySelectorAll('.rca-action-btn.small');
-        buttons.forEach((btn: any) => btn.style.opacity = '0');
-
         html2pdf().from(target).set(opt).save().finally(() => {
-            buttons.forEach((btn: any) => btn.style.opacity = '1');
+            // Revert all styles
+            target.setAttribute('style', originalStyle);
+            textElements.forEach((el: any, i) => {
+                el.setAttribute('style', originalTextStyles[i]);
+            });
         });
     };
 
-    const handleSendEmail = async () => {
+    const handleSendEmail = () => {
         if (!selectedShipment || !rcaReport) return;
-
-        const email = prompt("Enter recipient email address:", "admin@example.com");
-        if (!email) return;
 
         try {
             const data = JSON.parse(rcaReport);
-            const response = await fetch('/api/email/email-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    recipient_email: email,
-                    report_data: {
-                        shipment_id: selectedShipment.shipment_id,
-                        ...data
-                    }
-                })
-            });
 
-            const result = await response.json();
-            if (result.status === 'success') {
-                alert("Report sent to " + email + " successfully!");
-            } else {
-                alert("Failed to send email: " + result.message);
-            }
+            const subject = `RCA Analysis Report - Shipment #${selectedShipment.shipment_id}`;
+
+            let body = `RCA ANALYSIS REPORT\n`;
+            body += `====================\n\n`;
+            body += `Shipment ID: #${selectedShipment.shipment_id}\n`;
+            body += `Route ID: ${selectedShipment.route_id}\n`;
+            body += `Delay Duration: ${(selectedShipment.delay_minutes / 60).toFixed(2)} hours\n\n`;
+
+            body += `RCA CATEGORY: ${data.rca_class}\n`;
+            body += `AI CONFIDENCE SCORE: ${(data.confidence * 100).toFixed(1)}%\n\n`;
+
+            body += `ROOT CAUSE INVESTIGATION:\n`;
+            body += `${data.root_cause}\n\n`;
+
+            body += `OPERATIONAL IMPACT:\n`;
+            body += `${data.impact}\n\n`;
+
+            body += `ADAPTIVE RECOMMENDATIONS:\n`;
+            body += `${data.improvements}\n\n`;
+
+            body += `Report generated by Plan Adherence AI Intelligence.`;
+
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+
         } catch (error) {
-            console.error("Email error:", error);
-            alert("Error connecting to email service.");
+            console.error("Email preparation error:", error);
+            alert("Error preparing the email report.");
         }
     };
+
+    const updateSlotData = (newAssignment: any) => {
+        // Increase utilization slightly to show live updates
+        if (masterKpis) {
+            setMasterKpis({
+                ...masterKpis,
+                util: parseFloat((Math.min(98, (masterKpis.util || 76.8) + 1.2)).toFixed(1))
+            });
+        }
+
+        // Update Tables to reflect the booking
+        if (allTables) {
+            const updatedTables = { ...allTables };
+
+            if (updatedTables.Slots) {
+                updatedTables.Slots = updatedTables.Slots.map((s: any) =>
+                    s.slot_id === newAssignment.slot_id || s.slot_number === newAssignment.slot_number
+                        ? { ...s, slot_status: 'Occupied', current_truck: newAssignment.truck_id }
+                        : s
+                );
+            }
+
+            if (updatedTables.Shipments) {
+                updatedTables.Shipments = updatedTables.Shipments.map((s: any) =>
+                    s.shipment_id === newAssignment.truck_id
+                        ? { ...s, shipment_status: 'Slot_Assigned' }
+                        : s
+                );
+            }
+
+            setAllTables(updatedTables);
+        }
+    };
+
+    if (showLanding) {
+        return <LandingPage onExplore={() => setShowLanding(false)} />;
+    }
 
     return (
         <div className={`layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -844,15 +913,15 @@ function App() {
                                             }
                                         })()}
                                     </div>
-                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem', marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                                        <button className="rca-action-btn small" onClick={handleDownloadPDF} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px', background: 'var(--bg-main)', border: '1px solid var(--border-card)' }}>
-                                            <Download size={16} /> Export PDF
+                                    <div className="response-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '2.5rem', marginTop: '2.5rem', display: 'flex', gap: '1.25rem', justifyContent: 'flex-end' }}>
+                                        <button className="btn-sexy btn-sexy-outline" onClick={handleDownloadPDF} style={{ padding: '0.8rem 1.75rem', borderRadius: '14px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.3s ease', border: '1.5px solid rgba(0,0,0,0.06)', background: '#fff', color: '#444', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Download size={18} /> Export PDF
                                         </button>
-                                        <button className="rca-action-btn small" onClick={handleSendEmail} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px', background: 'rgba(229, 182, 17, 0.1)', border: '1px solid var(--color-accent)', color: 'var(--color-accent)' }}>
-                                            <Mail size={16} /> Share via Email
+                                        <button className="btn-sexy btn-sexy-secondary" onClick={handleSendEmail} style={{ padding: '0.8rem 1.75rem', borderRadius: '14px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.3s ease', border: '1.5px solid rgba(229, 182, 17, 0.2)', background: 'rgba(229, 182, 17, 0.08)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Mail size={18} /> Share via Email
                                         </button>
-                                        <button className="rca-action-btn small" onClick={() => setRcaState('suggesting')} style={{ padding: '0.6rem 1.25rem', width: 'auto', gap: '8px' }}>
-                                            Analyze Another
+                                        <button className="btn-sexy btn-sexy-primary" onClick={() => setRcaState('suggesting')} style={{ padding: '0.8rem 1.8rem', borderRadius: '14px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.3s ease', border: 'none', background: 'linear-gradient(135deg, #000, #222)', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2)' }}>
+                                            Analyze Another <ArrowRight size={18} />
                                         </button>
                                     </div>
                                 </div>
@@ -876,6 +945,7 @@ function App() {
                         masterKpis={masterKpis}
                         allTables={allTables}
                         suggestedShipments={suggestedShipments}
+                        onUpdateData={updateSlotData}
                     />
                 ) : (
                     <div className="placeholder-view">

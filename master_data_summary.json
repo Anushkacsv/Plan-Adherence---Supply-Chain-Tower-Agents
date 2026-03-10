@@ -1,0 +1,290 @@
+{
+  "Slot": {
+    "columns": [
+      "slot_id",
+      "warehouse_id",
+      "slot_number",
+      "slot_start_time",
+      "slot_end_time",
+      "assigned_shipment_id",
+      "slot_status",
+      "actual_checkin_time",
+      "actual_checkout_time",
+      "waiting_time_minutes"
+    ],
+    "sample_values": {
+      "slot_id": [
+        "SLOT-0000001",
+        "SLOT-0000002",
+        "SLOT-0000003",
+        "SLOT-0000004",
+        "SLOT-0000005",
+        "SLOT-0000006",
+        "SLOT-0000007",
+        "SLOT-0000008",
+        "SLOT-0000009",
+        "SLOT-0000010"
+      ],
+      "warehouse_id": [
+        "WH-DEL-01",
+        "WH-KOL-01",
+        "WH-COI-01",
+        "WH-PAT-01",
+        "WH-GUW-01",
+        "WH-CHE-01",
+        "WH-MUM-01",
+        "WH-LUC-01",
+        "WH-PUN-01",
+        "WH-BAN-01"
+      ],
+      "slot_number": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "slot_start_time": [
+        "2026-01-01T01:00:00",
+        "2026-01-01T02:00:00",
+        "2026-01-01T03:00:00",
+        "2026-01-01T04:00:00",
+        "2026-01-01T05:00:00",
+        "2026-01-01T06:00:00",
+        "2026-01-01T07:00:00",
+        "2026-01-01T08:00:00",
+        "2026-01-01T09:00:00",
+        "2026-01-01T10:00:00"
+      ],
+      "slot_end_time": [
+        "2026-01-01T02:00:00",
+        "2026-01-01T03:00:00",
+        "2026-01-01T04:00:00",
+        "2026-01-01T05:00:00",
+        "2026-01-01T06:00:00",
+        "2026-01-01T07:00:00",
+        "2026-01-01T08:00:00",
+        "2026-01-01T09:00:00",
+        "2026-01-01T10:00:00",
+        "2026-01-01T11:00:00"
+      ],
+      "assigned_shipment_id": [],
+      "slot_status": [
+        "Free"
+      ],
+      "actual_checkin_time": [],
+      "actual_checkout_time": [],
+      "waiting_time_minutes": [
+        "0"
+      ]
+    }
+  },
+  "Dock": {
+    "columns": [
+      "warehouse_id",
+      "dock_number",
+      "dock_id",
+      "dock_type",
+      "dock_capacity",
+      "dock_status",
+      "slot_id"
+    ],
+    "sample_values": {
+      "warehouse_id": [
+        "WH-DEL-01",
+        "WH-KOL-01",
+        "WH-COI-01",
+        "WH-PAT-01",
+        "WH-GUW-01",
+        "WH-CHE-01",
+        "WH-MUM-01",
+        "WH-LUC-01",
+        "WH-PUN-01",
+        "WH-BAN-01"
+      ],
+      "dock_number": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "dock_id": [
+        "DOCK-DEL-1",
+        "DOCK-KOL-2",
+        "DOCK-COI-3",
+        "DOCK-PAT-4",
+        "DOCK-COI-5",
+        "DOCK-GUW-6",
+        "DOCK-KOL-7",
+        "DOCK-CHE-8",
+        "DOCK-MUM-9",
+        "DOCK-LUC-10"
+      ],
+      "dock_type": [
+        "Loading",
+        "Mixed",
+        "Unloading"
+      ],
+      "dock_capacity": [
+        "Medium",
+        "Small",
+        "Large"
+      ],
+      "dock_status": [
+        "Maintenance",
+        "Active"
+      ],
+      "slot_id": [
+        "SLOT-0000001",
+        "SLOT-0000002",
+        "SLOT-0000003",
+        "SLOT-0000004",
+        "SLOT-0000006",
+        "SLOT-0000008",
+        "SLOT-0000009",
+        "SLOT-0000010",
+        "SLOT-0000011",
+        "SLOT-0000013"
+      ]
+    }
+  },
+  "Warehouse ": {
+    "columns": [
+      "warehouse_id",
+      "warehouse_name",
+      "city",
+      "warehouse_type",
+      "total_docks",
+      "operating_hours_start",
+      "operating_hours_end",
+      "avg_loading_time_minutes",
+      "average_dispatch_delay",
+      "congestion_score",
+      "warehouse_status",
+      "warehouse_congestion_score"
+    ],
+    "sample_values": {
+      "warehouse_id": [
+        "WH-SIL-01",
+        "WH-RAN-01",
+        "WH-BHU-01",
+        "WH-LUC-01",
+        "WH-JAI-01",
+        "WH-AHM-01",
+        "WH-PUN-01",
+        "WH-MYS-01",
+        "WH-GUW-01",
+        "WH-MUM-01"
+      ],
+      "warehouse_name": [
+        "Siliguri Hub",
+        "Ranchi Hub",
+        "Bhubaneswar Hub",
+        "Lucknow Hub",
+        "Jaipur Hub",
+        "Ahmedabad Hub",
+        "Pune Hub",
+        "Mysore Hub",
+        "Guwahati Hub",
+        "Mumbai Hub"
+      ],
+      "city": [
+        "Siliguri",
+        "Ranchi",
+        "Bhubaneswar",
+        "Lucknow",
+        "Jaipur",
+        "Ahmedabad",
+        "Pune",
+        "Mysore",
+        "Guwahati",
+        "Mumbai"
+      ],
+      "warehouse_type": [
+        "Crossdock",
+        "Plant",
+        "DC"
+      ],
+      "total_docks": [
+        "10",
+        "4",
+        "11",
+        "12",
+        "7",
+        "14",
+        "8",
+        "9",
+        "5",
+        "13"
+      ],
+      "operating_hours_start": [
+        "08:00:00"
+      ],
+      "operating_hours_end": [
+        "22:00:00"
+      ],
+      "avg_loading_time_minutes": [
+        "46",
+        "70",
+        "32",
+        "68",
+        "55",
+        "52",
+        "26",
+        "29",
+        "42",
+        "43"
+      ],
+      "average_dispatch_delay": [
+        "17",
+        "26",
+        "20",
+        "5",
+        "34",
+        "39",
+        "21",
+        "25",
+        "38",
+        "14"
+      ],
+      "congestion_score": [
+        "53",
+        "79",
+        "82",
+        "33",
+        "44",
+        "38",
+        "69",
+        "50",
+        "72",
+        "62"
+      ],
+      "warehouse_status": [
+        "Active"
+      ],
+      "warehouse_congestion_score": [
+        "0.35",
+        "0.91",
+        "0.65",
+        "0.72",
+        "0.86",
+        "0.67",
+        "0.42",
+        "0.28",
+        "0.54",
+        "0.36"
+      ]
+    }
+  }
+}
