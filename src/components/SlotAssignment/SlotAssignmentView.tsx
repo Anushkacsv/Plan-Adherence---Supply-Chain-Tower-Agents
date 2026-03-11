@@ -80,7 +80,7 @@ export const SlotAssignmentView: React.FC<SlotAssignmentViewProps> = ({
                 timestamp: new Date().toISOString()
             });
 
-            const N8N_URL = `http://localhost:5678/webhook/f368d3f3-4717-4204-98aa-ed4dccc61e6e?${params.toString()}`;
+            const N8N_URL = `https://n8n.sofiatechnology.ai/webhook/f368d3f3-4717-4204-98aa-ed4dccc61e6e?${params.toString()}`;
 
             const response = await fetch(N8N_URL, {
                 method: 'GET',
