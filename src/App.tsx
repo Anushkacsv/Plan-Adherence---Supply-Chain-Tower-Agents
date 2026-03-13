@@ -810,9 +810,9 @@ function App() {
                                                                     <Truck size={20} />
                                                                 </div>
                                                                 <div className="shipment-meta-info">
-                                                                    <div className="shipment-label-id">{s.shipment_id}</div>
-                                                                    <div className="shipment-label-route">
-                                                                        <Activity size={12} /> {s.route_id}
+                                                                    <div className="shipment-label-id" style={{ fontSize: '0.9rem', fontWeight: 800 }}>{s.assigned_carrier_id?.replace(/^C\d-R-/, '').replace(/-/g, ' ') || 'Express Cargo'}</div>
+                                                                    <div className="shipment-label-route" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                                                        ID: {s.shipment_id} • {s.route_id}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -832,8 +832,8 @@ function App() {
                                                     <Clock size={20} />
                                                 </div>
                                                 <div>
-                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Open Shipments</h3>
-                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Currently in network pipeline</p>
+                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Open Pipeline</h3>
+                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>In-transit & Active shipments</p>
                                                 </div>
                                                 <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#3b82f6', color: 'white', padding: '2px 10px', borderRadius: '100px', fontWeight: 800 }}>
                                                     {suggestedShipments.filter(s => s.shipment_status !== 'Delivered').length || 12}
@@ -847,7 +847,7 @@ function App() {
                                             }}>
                                                 {(suggestedShipments.filter(s => s.shipment_status !== 'Delivered').length > 0 
                                                     ? suggestedShipments.filter(s => s.shipment_status !== 'Delivered')
-                                                    : suggestedShipments.slice(20, 30) // Fallback for demo if all are delivered
+                                                    : suggestedShipments.slice(15, 25) // Fallback for demo
                                                 ).map((s, idx) => (
                                                         <div key={`open-${idx}`} className="shipment-sexy-card" onClick={() => handleShipmentSelect(s)} style={{ margin: 0, borderLeft: '4px solid #3b82f6' }}>
                                                             <div className="id-badge">
@@ -855,14 +855,14 @@ function App() {
                                                                     <PackageSearch size={20} />
                                                                 </div>
                                                                 <div className="shipment-meta-info">
-                                                                    <div className="shipment-label-id">{s.shipment_id}</div>
+                                                                    <div className="shipment-label-id" style={{ fontSize: '0.9rem', fontWeight: 800 }}>{s.assigned_carrier_id?.replace(/^C\d-R-/, '').replace(/-/g, ' ') || 'In-Pipeline Shipment'}</div>
                                                                     <div className="shipment-label-status" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
-                                                                        {s.shipment_status === 'Delivered' ? 'In Transit' : s.shipment_status}
+                                                                        ID: {s.shipment_id} • {s.route_id}
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="route-tag-sexy" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-                                                                {s.route_id}
+                                                            <div className="status-tag-sexy" style={{ fontSize: '0.7rem', fontWeight: 800, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '4px 8px', borderRadius: '6px' }}>
+                                                                {s.shipment_status === 'Delivered' ? 'IN TRANSIT' : s.shipment_status.toUpperCase()}
                                                             </div>
                                                         </div>
                                                     ))}
