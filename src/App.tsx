@@ -893,46 +893,18 @@ function App() {
                                         <span>RCA Analysis Result</span>
                                     </div>
                                     <div className="response-body rca-response-content">
-                                        <div className="shipment-detailed-telemetry" style={{ 
-                                            display: 'grid', 
-                                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                                            gap: '1.5rem', 
-                                            marginBottom: '2.5rem',
-                                            padding: '1.5rem',
-                                            background: 'rgba(255,255,255,0.02)',
-                                            borderRadius: '20px',
-                                            border: '1px solid rgba(255,255,255,0.06)'
-                                        }}>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Logistics Partner</div>
-                                                <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Truck size={14} color="var(--color-accent)" /> 
-                                                    {selectedShipment?.assigned_carrier_id?.replace(/^C\d-R-/, '').replace(/-/g, ' ') || 'Express Cargo'}
-                                                </div>
+                                        <div className="shipment-summary" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Shipment ID</span>
+                                                <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>#{selectedShipment?.shipment_id}</span>
                                             </div>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Dispatch Window (P/A)</div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                    {selectedShipment?.planned_dispatch_time?.split(' ')[1]} / <span style={{ color: 'var(--color-negative)' }}>{selectedShipment?.actual_dispatch_time?.split(' ')[1]}</span>
-                                                </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Planned Route</span>
+                                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-accent)' }}>{selectedShipment?.route_id}</span>
                                             </div>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Arrival Window (P/A)</div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                                    {selectedShipment?.planned_arrival_time?.split(' ')[1]} / <span style={{ color: 'var(--color-negative)' }}>{selectedShipment?.actual_arrival_time?.split(' ')[1]}</span>
-                                                </div>
-                                            </div>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Current Facility</div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{selectedShipment?.warehouse_id || 'Primary Hub'}</div>
-                                            </div>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Accrued Detention</div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-negative)' }}>${selectedShipment?.detention_cost?.toLocaleString()}</div>
-                                            </div>
-                                            <div className="telemetry-item">
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Transit Distance</div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{selectedShipment?.distance_km} KM</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Delay Duration</span>
+                                                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-negative)' }}>{(selectedShipment?.delay_minutes / 60).toFixed(2)} hrs</span>
                                             </div>
                                         </div>
 
