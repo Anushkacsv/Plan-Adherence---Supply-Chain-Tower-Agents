@@ -68,6 +68,9 @@ export const SlotAssignmentView: React.FC<SlotAssignmentViewProps> = ({
     const handleBookSlot = async (req: any) => {
         setBookingInProgress(req.truck_id);
 
+        // Simulated delay for "thinking" and "optimizing"
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
         try {
             const params = new URLSearchParams({
                 truck_id: req.truck_id,
@@ -161,7 +164,7 @@ export const SlotAssignmentView: React.FC<SlotAssignmentViewProps> = ({
 
             setRequests(newRequests);
             setIsLoading(false);
-        }, 800);
+        }, 2000);
     };
 
     return (

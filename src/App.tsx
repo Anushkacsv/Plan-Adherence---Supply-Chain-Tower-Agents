@@ -349,7 +349,7 @@ function App() {
 
                 setRcaReport(JSON.stringify(reportData));
                 setRcaState('response');
-            }, 1000);
+            }, 3000);
         }
     };
 
