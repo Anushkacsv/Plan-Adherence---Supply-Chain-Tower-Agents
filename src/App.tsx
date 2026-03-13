@@ -778,8 +778,7 @@ function App() {
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>High-priority shipments requiring immediate RCA</p>
                                     </div>
 
-                                    <div className="shipment-single-view" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                                        {/* Left Column: Flagged Shipments */}
+                                    <div className="shipment-single-view" style={{ width: '100%' }}>
                                         <div className="shipment-column">
                                             <div className="column-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', padding: '0 0.5rem' }}>
                                                 <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-negative)', padding: '8px', borderRadius: '10px' }}>
@@ -787,7 +786,7 @@ function App() {
                                                 </div>
                                                 <div>
                                                     <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Priority Issues</h3>
-                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Significant delays detected</p>
+                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Significant delays detected across the network</p>
                                                 </div>
                                                 <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: 'var(--color-negative)', color: 'white', padding: '2px 10px', borderRadius: '100px', fontWeight: 800 }}>
                                                     {suggestedShipments.filter(s => s.delay_minutes > 100).length}
@@ -795,14 +794,14 @@ function App() {
                                             </div>
                                             <div className="shipment-list-grid" style={{
                                                 display: 'grid',
-                                                gridTemplateColumns: '1fr',
-                                                gap: '1rem',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+                                                gap: '1.5rem',
                                                 width: '100%'
                                             }}>
                                                 {suggestedShipments
                                                     .filter(s => s.delay_minutes > 100)
                                                     .sort((a, b) => b.delay_minutes - a.delay_minutes)
-                                                    .slice(0, 10)
+                                                    .slice(0, 12)
                                                     .map((s, idx) => (
                                                         <div key={`flagged-${idx}`} className="shipment-sexy-card" onClick={() => handleShipmentSelect(s)} style={{ margin: 0 }}>
                                                             <div className="id-badge">
@@ -819,50 +818,6 @@ function App() {
                                                             <div className="delay-tag-sexy">
                                                                 <div className="pulse-warning"></div>
                                                                 +{(s.delay_minutes / 60).toFixed(2)}h
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Right Column: Open Shipments */}
-                                        <div className="shipment-column">
-                                            <div className="column-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', padding: '0 0.5rem' }}>
-                                                <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '8px', borderRadius: '10px' }}>
-                                                    <Clock size={20} />
-                                                </div>
-                                                <div>
-                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Open Pipeline</h3>
-                                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>In-transit & Active shipments</p>
-                                                </div>
-                                                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', background: '#3b82f6', color: 'white', padding: '2px 10px', borderRadius: '100px', fontWeight: 800 }}>
-                                                    {suggestedShipments.filter(s => s.shipment_status !== 'Delivered').length || 12}
-                                                </span>
-                                            </div>
-                                            <div className="shipment-list-grid" style={{
-                                                display: 'grid',
-                                                gridTemplateColumns: '1fr',
-                                                gap: '1rem',
-                                                width: '100%'
-                                            }}>
-                                                {(suggestedShipments.filter(s => s.shipment_status !== 'Delivered').length > 0 
-                                                    ? suggestedShipments.filter(s => s.shipment_status !== 'Delivered')
-                                                    : suggestedShipments.slice(15, 25) // Fallback for demo
-                                                ).map((s, idx) => (
-                                                        <div key={`open-${idx}`} className="shipment-sexy-card" onClick={() => handleShipmentSelect(s)} style={{ margin: 0, borderLeft: '4px solid #3b82f6' }}>
-                                                            <div className="id-badge">
-                                                                <div className="id-icon-circle" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                                                                    <PackageSearch size={20} />
-                                                                </div>
-                                                                <div className="shipment-meta-info">
-                                                                    <div className="shipment-label-id" style={{ fontSize: '0.9rem', fontWeight: 800 }}>{s.assigned_carrier_id?.replace(/^C\d-R-/, '').replace(/-/g, ' ') || 'In-Pipeline Shipment'}</div>
-                                                                    <div className="shipment-label-status" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
-                                                                        ID: {s.shipment_id} • {s.route_id}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="status-tag-sexy" style={{ fontSize: '0.7rem', fontWeight: 800, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '4px 8px', borderRadius: '6px' }}>
-                                                                {s.shipment_status === 'Delivered' ? 'IN TRANSIT' : s.shipment_status.toUpperCase()}
                                                             </div>
                                                         </div>
                                                     ))}
