@@ -129,8 +129,9 @@ function App() {
         { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
         { id: 'rca', label: 'RCA Analysis', icon: <Search size={18} /> },
         { id: 'transport', label: 'Slot Optimizer', icon: <Table size={18} /> },
-        { id: 'consolidation', label: 'Load Consolidation', icon: <Layers size={18} /> },
-        { id: 'disruption', label: 'Disruption Response', icon: <AlertTriangle size={18} /> }
+        { id: 'returns', label: 'Return Logistics', icon: <RotateCcw size={18} /> },
+        { id: 'disruption', label: 'Disruption Response', icon: <AlertTriangle size={18} /> },
+        { id: 'consolidation', label: 'Load Consolidation', icon: <Layers size={18} /> }
     ];
 
     // Load suggested shipments from dashboard_data.json
